@@ -1,0 +1,45 @@
+# Docker Compose file for Capital One Hackathon project
+version: '3.8'
+services:
+  agent-python:
+    build:
+      context: ./agent-python
+    container_name: agent-python
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - agent-python
+    restart: unless-stopped
+
+  chromadb:
+    build:
+      context: ./chromaDB
+    container_name: chromadb
+    ports:
+      - "8001:8000"
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+  frontend-android:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile # Make sure the case matches: D vs d
+    container_name: frontend-android
+    volumes:
+      - ./frontend/android-app/farmmate/build/app/outputs/flutter-apk:/apk-output
+    working_dir: /app/farmmate
+    command: [ "/bin/sh", "-c", "ls /apk-output && tail -f /dev/null" ]
+    restart: on-failure

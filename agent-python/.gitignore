@@ -11,3 +11,13 @@ __pycache__/
 # VSCode or IDE settings
 .vscode/
 .idea/
+
+# Logs and test outputs
+logs/
+*.log
+coverage/
+.pytest_cache/
+
+# OS-specific files
+Thumbs.db
+.DS_Store
