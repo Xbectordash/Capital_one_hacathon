@@ -1,0 +1,19 @@
+FROM ghcr.io/cirruslabs/flutter:stable
+
+# Set working directory to Flutter app folder
+WORKDIR /app
+
+# Copy your Flutter app from local to container
+COPY ./android-app/farmmate ./farmmate
+
+# Set working dir inside the project (where pubspec.yaml is)
+WORKDIR /app/farmmate
+
+# Install dependencies
+RUN flutter pub get
+
+# Build release APK
+RUN flutter build apk --release
+
+# Optional: Output APK list
+CMD ["ls", "-l", "build/app/outputs/flutter-apk"]
