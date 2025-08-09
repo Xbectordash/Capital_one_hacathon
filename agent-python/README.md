@@ -1,6 +1,49 @@
+
 # Agent Python
 
 This directory contains the Python agent for the Capital One Hackathon project.
+         ┌─────────────────────┐
+         │ 1. UserContextNode  │
+         │  (detect location,  │
+         │  language, device)  │
+         └─────────┬───────────┘
+                   │
+                   ▼
+         ┌─────────────────────┐
+         │ 2. QueryUnderstanding│
+         │  (intent, entities,  │
+         │   multi-intent)      │
+         └─────────┬───────────┘
+                   │
+                   ▼
+         ┌─────────────────────┐
+         │ 3. ConditionalRouter │
+         │ (route to relevant   │
+         │  agent functions)    │
+         └───────┬──────────────┘
+   ┌─────────────┼─────────────────────────────┐
+   ▼             ▼             ▼               ▼
+WeatherAgent   SoilAgent   MarketAgent   PolicyAgent
+   │             │             │               │
+   ▼             ▼             ▼               ▼
+CropHealthAgent OfflineAgent (optional)   ... more
+   └─────────────┬─────────────────────────────┘
+                 ▼
+         ┌─────────────────────┐
+         │ 4. DecisionSupport  │
+         │  (aggregate all     │
+         │   agent outputs)    │
+         └─────────┬───────────┘
+                   ▼
+         ┌─────────────────────┐
+         │ 5. TranslationNode  │
+         │ (final reply in     │
+         │  user's language)   │
+         └─────────┬───────────┘
+                   ▼
+                Final
+               Response
+
 
 ## Project Structure
 
