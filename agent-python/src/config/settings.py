@@ -7,14 +7,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Get your API key for Gemini from here
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 def get_config():
     """
     Returns configuration settings as a dictionary.
     """
     return {
-        "GOOGLE_API_KEY": GOOGLE_API_KEY,
+        "GEMINI_API_KEY": GEMINI_API_KEY,
     }
 
 if __name__ == "__main__":
