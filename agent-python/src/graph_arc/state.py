@@ -9,6 +9,9 @@ class GlobalState(TypedDict):
     intents: list[str]              # ["weather", "soil", ...]
     entities: dict                  # {"crop": "wheat", "mandi": "Azadpur"}
     confidence_score: float
+    agent_results: Optional[dict]   # Results from various agents
+    decision: Optional[dict]        # Final decision from decision support
+    translation: Optional[dict]     # Translation results from translation agent
 
 class WeatherAgentState(TypedDict):
     date_range: Optional[str]
@@ -51,3 +54,15 @@ class TranslationState(TypedDict):
     detected_language: str
     translated_query: str
     translated_response: Optional[str]
+    translated_explanation: Optional[str]
+
+
+class AgentResultsState(TypedDict, total=False):
+    weather: WeatherAgentState
+    soil_crop_recommendation: SoilAgentState
+    market_price: MarketState
+    crop_health_pest: CropHealthState
+    policy_finance: PolicyState
+    offline_access: OfflineState
+    translation_language: TranslationState
+    decision_support: DecisionState

@@ -15,6 +15,20 @@ class Configuration(BaseModel):
         },
     )
 
+    decision_support_model: str = Field(
+        default="gemini-2.0-flash",
+        metadata={
+            "description": "The name of the language model to use for decision support and advice generation."
+        },
+    )
+
+    translation_model: str = Field(
+        default="gemini-2.0-flash",
+        metadata={
+            "description": "The name of the language model to use for translating agricultural content to local languages."
+        },
+    )
+
 
     @classmethod
     def from_runnable_config(
