@@ -1,9 +1,13 @@
+import 'dart:io';
 import 'package:farmmate/utils/constants/app_assets.dart';
 import 'package:farmmate/utils/constants/app_sizes.dart';
 import 'package:farmmate/utils/constants/app_strings.dart';
 import 'package:farmmate/utils/extensions/app_extensions.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_speech/flutter_speech.dart';
+import 'package:logger/web.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,9 +17,89 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  Logger logger = Logger();
+  FilePickerResult? result;
+  late SpeechRecognition _speech;
+  bool _isListening = false;
+  bool _isSpeechAvailable = false;
+  String _currentLocaleId = '';
+  final TextEditingController _textController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    activateSpeechRecognizer();
+  }
+
+  void activateSpeechRecognizer() {
+  _speech = SpeechRecognition();
+  _speech.setAvailabilityHandler(onSpeechAvailability);
+  _speech.setRecognitionStartedHandler(onRecognitionStarted);
+  _speech.setRecognitionResultHandler(onRecognitionResult);
+  _speech.setRecognitionCompleteHandler(onRecognitionComplete);
+
+  // The 'activate' method returns a bool to confirm if activation was successful.
+  _speech.activate("en_US").then((isActivated) {
+    setState(() {
+      // Assign the bool result to your new bool variable
+      _isSpeechAvailable = isActivated;
+
+      // You already know the locale is "en_US" because you passed it.
+      if (isActivated) {
+        _currentLocaleId = "en_US";
+      }
+    });
+  });
+}
+
+  // void activateSpeechRecognizer() {
+  //   _speech = SpeechRecognition();
+  //   _speech.setAvailabilityHandler(onSpeechAvailability);
+  //   _speech.setRecognitionStartedHandler(onRecognitionStarted);
+  //   _speech.setRecognitionResultHandler(onRecognitionResult);
+  //   _speech.setRecognitionCompleteHandler(onRecognitionComplete);
+  //   _speech.activate("en_US").then((value) {
+  //     setState(() => _currentLocaleId = value);
+  //   });
+  // }
+
+  void onSpeechAvailability(bool isAvailable) {
+    setState(() => _isListening = isAvailable);
+  }
+
+  void onRecognitionStarted() {
+    setState(() => _isListening = true);
+  }
+
+  void onRecognitionResult(String text) {
+    setState(() {
+      _textController.text = text;
+    });
+  }
+
+  void onRecognitionComplete(String text) {
+    setState(() {
+      _isListening = false;
+      // If you also want the final recognized text:
+      _textController.text = text;
+    });
+  }
+
+  void startListening() {
+    _speech.listen().then((_) {
+      print('Started listening...');
+    });
+  }
+
+  void stopListening() {
+    _speech.stop().then((_) {
+      setState(() => _isListening = false);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
     return AnnotatedRegion(
       value: SystemUiOverlayStyle(
         statusBarColor: Colors.white,
@@ -36,16 +120,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   leading: const Icon(Icons.home),
                   title: const Text('Home'),
                   onTap: () {
-                    Navigator.pop(context); // Close drawer
-                    // Navigate to home
+                    Navigator.pop(context);
                   },
                 ),
                 ListTile(
                   leading: const Icon(Icons.settings),
                   title: const Text('Settings'),
                   onTap: () {
-                    Navigator.pop(context); // Close drawer
-                    // Navigate to settings
+                    Navigator.pop(context);
                   },
                 ),
               ],
@@ -55,8 +137,8 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Padding(
                 padding: EdgeInsets.symmetric(
-                  horizontal: context.screenWidth * 0.05, // 5%
-                  vertical: context.screenHeight * 0.015, // 2%
+                  horizontal: context.screenWidth * 0.05,
+                  vertical: context.screenHeight * 0.015,
                 ),
                 child: Row(
                   children: [
@@ -113,64 +195,193 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: Row(
                   children: [
-                    // Image/Gallery Button
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(100),
-                        color: Colors.grey.shade300,
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(AppSizes.padding10),
-                        child: Image.asset(
-                          AppAssets.blackImageGallery,
-                          width: 25,
-                          height: 25,
+                    GestureDetector(
+                      onTap: () async {
+                        final pickedFiles = await FilePicker.platform.pickFiles(
+                          allowMultiple: true,
+                        );
+                        if (pickedFiles == null) {
+                          logger.e("No file selected");
+                        } else {
+                          setState(() {
+                            result = pickedFiles;
+                          });
+                          for (var element in result!.files) {
+                            logger.d(element.name);
+                          }
+                        }
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(100),
+                          color: Colors.grey.shade300,
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(AppSizes.padding10),
+                          child: Image.asset(
+                            AppAssets.blackImageGallery,
+                            width: 25,
+                            height: 25,
+                          ),
                         ),
                       ),
                     ),
                     SizedBox(width: context.screenWidth * 0.02),
-
-                    // Input Field with Mic
                     Expanded(
                       child: Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: AppSizes.padding10,
                         ),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(100),
+                          borderRadius: BorderRadius.circular(20),
                           color: Colors.grey.shade300,
                         ),
                         child: Row(
                           children: [
                             Expanded(
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  hintText: AppStrings.askAnythingHint,
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.only(
-                                    left: 10,
-                                    right: 10,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (result != null &&
+                                      result!.files.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                      ),
+                                      child: SizedBox(
+                                        height: 50,
+                                        child: ListView.separated(
+                                          scrollDirection: Axis.horizontal,
+                                          itemCount: result!.files.length,
+                                          separatorBuilder: (_, __) =>
+                                              SizedBox(width: 8),
+                                          itemBuilder: (context, index) {
+                                            final file = result!.files[index];
+                                            final isImage =
+                                                file.extension
+                                                        ?.toLowerCase()
+                                                        .contains('png') ==
+                                                    true ||
+                                                file.extension
+                                                        ?.toLowerCase()
+                                                        .contains('jpg') ==
+                                                    true ||
+                                                file.extension
+                                                        ?.toLowerCase()
+                                                        .contains('jpeg') ==
+                                                    true;
+
+                                            return Stack(
+                                              children: [
+                                                Container(
+                                                  padding: EdgeInsets.all(5),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          8,
+                                                        ),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      if (isImage &&
+                                                          file.path != null)
+                                                        Image.file(
+                                                          File(file.path!),
+                                                          width: 40,
+                                                          height: 40,
+                                                          fit: BoxFit.cover,
+                                                        )
+                                                      else
+                                                        Icon(
+                                                          Icons
+                                                              .insert_drive_file,
+                                                          size: 30,
+                                                          color: Colors.grey,
+                                                        ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Positioned(
+                                                  right: -10,
+                                                  top: -10,
+                                                  child: IconButton(
+                                                    padding: EdgeInsets.zero,
+                                                    constraints:
+                                                        const BoxConstraints(),
+                                                    icon: const Icon(
+                                                      Icons.cancel,
+                                                      size: 18,
+                                                    ),
+                                                    onPressed: () {
+                                                      setState(() {
+                                                        final files = result!
+                                                            .files
+                                                            .toList();
+                                                        files.removeAt(index);
+                                                        if (files.isEmpty) {
+                                                          result = null;
+                                                        } else {
+                                                          result =
+                                                              FilePickerResult(
+                                                                files,
+                                                              );
+                                                        }
+                                                      });
+                                                    },
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: TextField(
+                                          controller: _textController,
+                                          decoration: InputDecoration(
+                                            hintText:
+                                                AppStrings.askAnythingHint,
+                                            border: InputBorder.none,
+                                          ),
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          if (_isListening) {
+                                            stopListening();
+                                          } else {
+                                            startListening();
+                                          }
+                                        },
+                                        child: Icon(
+                                          _isListening
+                                              ? Icons.mic_off
+                                              : Icons.mic,
+                                          color: _isListening
+                                              ? Colors.red
+                                              : Colors.black,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: context.screenWidth * 0.025,
+                                      ),
+                                      Image.asset(
+                                        AppAssets.blackSend,
+                                        width: 23,
+                                        height: 23,
+                                      ),
+                                    ],
                                   ),
-                                ),
+                                ],
                               ),
                             ),
-                            const Icon(Icons.mic),
                           ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: context.screenWidth * 0.02),
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(100),
-                        color: Colors.grey.shade300,
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(AppSizes.padding10),
-                        child: Image.asset(
-                          AppAssets.blackSend,
-                          width: 23,
-                          height: 23,
                         ),
                       ),
                     ),
