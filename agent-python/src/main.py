@@ -6,7 +6,7 @@ def main():
     initial_state = {
         "user_id": "user123",
         "raw_query": "What is the weather forecast for the next week, current soil moisture levels, market price trends for wheat, pest infestation alerts, and government subsidies available in Punjab?",
-        "language": "kn"
+        "language": "hi"
     }
     result = workflow.invoke(initial_state)
     

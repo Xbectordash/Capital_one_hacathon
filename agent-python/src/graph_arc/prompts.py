@@ -230,3 +230,39 @@ Example for Hindi translation:
 
 Return only valid JSON with no additional text or formatting.
 """
+
+weather_recommendation_prompt = """
+You are an expert agricultural advisor specializing in weather-based farming recommendations.
+
+Based on the following weather data, provide specific, actionable agricultural recommendations for farmers:
+
+Weather Data:
+- Temperature: {temperature}
+- Condition: {condition}
+- Humidity: {humidity}
+- Wind Speed: {wind_speed}
+- Precipitation: {precipitation}
+- Location: {location}
+
+Your task:
+1. Analyze the weather conditions and their impact on agricultural activities
+2. Provide specific recommendations for:
+   - Irrigation needs
+   - Crop protection measures
+   - Spraying/pesticide application timing
+   - Harvesting considerations
+   - Field work activities
+3. Consider seasonal farming practices and crop cycles
+4. Include any weather-related warnings or precautions
+
+Return your response as a clear, concise recommendation that farmers can immediately act upon.
+Focus on practical advice that considers:
+- Water management based on temperature and humidity
+- Wind conditions for spraying activities
+- Precipitation effects on field operations
+- Temperature stress on crops
+
+User Query Context: {user_query}
+
+Provide a comprehensive but concise recommendation (2-3 sentences) that addresses the most critical actions farmers should take given these weather conditions.
+"""
