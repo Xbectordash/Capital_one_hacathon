@@ -22,6 +22,7 @@ class SoilAgentState(TypedDict):
     soil_type: Optional[str]
     soil_health: Optional[dict]
     recommended_crops: Optional[list[str]]
+    ai_recommendation: Optional[str]
 
 class CropHealthState(TypedDict):
     crop_type: str

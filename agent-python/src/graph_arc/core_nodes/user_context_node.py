@@ -19,7 +19,7 @@ def get_user_context(state: GlobalState) -> GlobalState:
     original_device = state.get("device_type")
     
     state["language"] = state.get("language") or "en"
-    state["location"] = state.get("location") or "Delhi"
+    state["location"] = state.get("location") or "Satara"
     state["device_type"] = state.get("device_type") or "web"
 
     logger.info(f"[UserContextNode] Language: {original_language} -> {state['language']}")
