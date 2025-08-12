@@ -3,7 +3,7 @@ from graph_arc.agents_node.weather_agent import weather_agent
 from graph_arc.agents_node.soil_crop_recommendation_agent import soil_crop_recommendation_agent
 from graph_arc.agents_node.market_price_agent import market_price_agent
 from graph_arc.agents_node.crop_health_pest_agent import crop_health_pest_agent
-from graph_arc.agents_node.policy_finance_agent import policy_finance_agent
+from graph_arc.agents_node.government_schemes_agent import government_schemes_agent
 from graph_arc.core_nodes.offline_access_agent import offline_access_agent
 # Import state types
 from graph_arc.state import GlobalState, AgentResultsState
@@ -54,15 +54,15 @@ def conditional_router(state: Dict[str, Any]) -> Dict[str, Any]:
             logger.info("[ConditionalRouter] Invoking crop health pest agent")
             results["crop_health_pest"] = crop_health_pest_agent(state)
             logger.info("[ConditionalRouter] Crop health agent completed")
-        elif intent == "policy":
-            logger.info("[ConditionalRouter] Invoking policy finance agent")
-            results["policy_finance"] = policy_finance_agent(state)
-            logger.info("[ConditionalRouter] Policy finance agent completed")
+        elif intent == "government_schemes":
+            logger.info("[ConditionalRouter] Invoking government schemes agent")
+            results["government_schemes"] = government_schemes_agent(state)
+            logger.info("[ConditionalRouter] Government schemes agent completed")
         elif intent == "offline":
             logger.info("[ConditionalRouter] Invoking offline access agent")
             results["offline_access"] = offline_access_agent(state)
             logger.info("[ConditionalRouter] Offline access agent completed")
-        elif intent not in ["translation", "decision_support"]:  # These are handled separately
+        elif intent not in ["translation", "decision_support", "policy"]:  # These are handled separately
             logger.warning(f"[ConditionalRouter] No handler found for intent: {intent}")
             results[intent] = {"error": f"No handler for intent '{intent}'"}
     

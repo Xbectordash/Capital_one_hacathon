@@ -2,12 +2,17 @@
 
 import os
 from dotenv import load_dotenv
+from pathlib import Path
+
+# Get the path to the .env file in the env folder
+env_path = Path(__file__).resolve().parent.parent.parent / "env" / ".env"
 
 # Load environment variables from the .env file
-load_dotenv()
+load_dotenv(dotenv_path=env_path)
 
 # Get your API key for Gemini from here
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+WEATHER_API = os.getenv("WEATHER_API")
 
 def get_config():
     """
