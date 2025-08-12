@@ -1,19 +1,74 @@
-FROM ghcr.io/cirruslabs/flutter:stable
+# Multi-stage Dockerfile for FarmMate Frontend
+# Supports both React Web App and Flutter Mobile App
 
-# Set working directory to Flutter app folder
+# =============================================================================
+# STAGE 1: React Web Application
+# =============================================================================
+FROM node:18-alpine AS web-app
+
+# Set working directory
 WORKDIR /app
 
-# Copy your Flutter app from local to container
-COPY ./android-app/farmmate ./farmmate
+# Copy React web app
+COPY ./web/agricultural-chat-app/package*.json ./
+RUN npm install
 
-# Set working dir inside the project (where pubspec.yaml is)
-WORKDIR /app/farmmate
+# Copy source code
+COPY ./web/agricultural-chat-app/ ./
 
-# Install dependencies
-RUN flutter pub get
+# Build the React app for production
+RUN npm run build
 
-# Build release APK
-RUN flutter build apk --release
+# Serve the app using a lightweight HTTP server
+FROM nginx:alpine AS web-production
+COPY --from=web-app /app/build /usr/share/nginx/html
 
-# Optional: Output APK list
-CMD ["ls", "-l", "build/app/outputs/flutter-apk"]
+# Copy custom nginx config for React Router
+RUN echo 'server { \
+  listen 3000; \
+  server_name localhost; \
+  root /usr/share/nginx/html; \
+  index index.html; \
+  location / { \
+    try_files $uri $uri/ /index.html; \
+  } \
+  location /api { \
+    proxy_pass http://backend:5000; \
+    proxy_http_version 1.1; \
+    proxy_set_header Upgrade $http_upgrade; \
+    proxy_set_header Connection "upgrade"; \
+    proxy_set_header Host $host; \
+    proxy_set_header X-Real-IP $remote_addr; \
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; \
+    proxy_set_header X-Forwarded-Proto $scheme; \
+  } \
+}' > /etc/nginx/conf.d/default.conf
+
+# Expose port 3000 for React app
+EXPOSE 3000
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
+
+# =============================================================================
+# STAGE 2: Flutter Mobile Application (COMMENTED OUT FOR NOW)
+# =============================================================================
+# FROM ghcr.io/cirruslabs/flutter:stable AS flutter-app
+# 
+# # Set working directory to Flutter app folder
+# WORKDIR /app
+# 
+# # Copy your Flutter app from local to container
+# COPY ./android-app/farmmate ./farmmate
+# 
+# # Set working dir inside the project (where pubspec.yaml is)
+# WORKDIR /app/farmmate
+# 
+# # Install dependencies
+# RUN flutter pub get
+# 
+# # Build release APK
+# RUN flutter build apk --release
+# 
+# # Optional: Output APK list
+# CMD ["ls", "-l", "build/app/outputs/flutter-apk"]
