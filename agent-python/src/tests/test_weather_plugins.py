@@ -1,10 +1,10 @@
 import unittest
 import requests
 import os
-from data.weather_plugins import fetch_weather_data
-from config.settings import WEATHER_API
-from graph_arc.agents_node.weather_agent import weather_agent
-from graph_arc.state import GlobalState
+from src.data.weather_plugins import fetch_weather_data
+from src.config.settings import WEATHER_API
+from src.graph_arc.agents_node.weather_agent import weather_agent
+from src.graph_arc.state import GlobalState
 
 
 class TestWeatherPluginsRealAPI(unittest.TestCase):

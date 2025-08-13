@@ -2,13 +2,12 @@
 Weather Agent Node
 Description: Provides weather information and forecasts for a given location.
 """
-from typing import Optional
-from graph_arc.state import GlobalState, WeatherAgentState
-from utils.loggers import get_logger
-from data.weather_plugins import fetch_weather_data
+from src.graph_arc.state import GlobalState, WeatherAgentState
+from src.utils.loggers import get_logger
+from src.data.weather_plugins import fetch_weather_data
 from langchain_google_genai import ChatGoogleGenerativeAI
-from config.settings import GEMINI_API_KEY
-from graph_arc.prompts import weather_recommendation_prompt
+from src.config.settings import GEMINI_API_KEY
+from src.graph_arc.prompts import weather_recommendation_prompt
 
 def weather_agent(state: GlobalState) -> WeatherAgentState:
     """
@@ -30,7 +29,7 @@ def weather_agent(state: GlobalState) -> WeatherAgentState:
     # Fetch real weather data using the plugin
     try:
         forecast = fetch_weather_data(location)
-        logger.info(forecast);
+        logger.info(forecast)
     except ValueError as e:
         logger.error(f"[WeatherAgent] Failed to fetch weather data: {e}")
         forecast = {

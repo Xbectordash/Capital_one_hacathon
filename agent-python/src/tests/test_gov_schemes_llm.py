@@ -6,7 +6,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from graph_arc.agents_node.government_schemes_agent import government_schemes_agent
+from src.graph_arc.agents_node.government_schemes_agent import government_schemes_agent
 
 def test_government_schemes_llm():
     """Test that the government schemes agent uses LLM properly"""

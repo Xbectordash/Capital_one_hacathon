@@ -2,8 +2,8 @@
 Offline Access Agent Node
 Description: Provides offline access to agricultural information.
 """
-from graph_arc.state import GlobalState, OfflineState
-from utils.loggers import get_logger
+from src.graph_arc.state import GlobalState, OfflineState
+from src.utils.loggers import get_logger
 
 def offline_access_agent(state: GlobalState) -> OfflineState:
     """

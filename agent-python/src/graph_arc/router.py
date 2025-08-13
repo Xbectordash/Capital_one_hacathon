@@ -1,13 +1,13 @@
 # Import agent node functions
-from graph_arc.agents_node.weather_agent import weather_agent
-from graph_arc.agents_node.soil_crop_recommendation_agent import soil_crop_recommendation_agent
-from graph_arc.agents_node.market_price_agent import market_price_agent
-from graph_arc.agents_node.crop_health_pest_agent import crop_health_pest_agent
-from graph_arc.agents_node.government_schemes_agent import government_schemes_agent
-from graph_arc.core_nodes.offline_access_agent import offline_access_agent
+from src.graph_arc.agents_node.weather_agent import weather_agent
+from src.graph_arc.agents_node.soil_crop_recommendation_agent import soil_crop_recommendation_agent
+from src.graph_arc.agents_node.market_price_agent import market_price_agent
+from src.graph_arc.agents_node.crop_health_pest_agent import crop_health_pest_agent
+from src.graph_arc.agents_node.government_schemes_agent import government_schemes_agent
+from src.graph_arc.core_nodes.offline_access_agent import offline_access_agent
 # Import state types
-from graph_arc.state import GlobalState, AgentResultsState
-from utils.loggers import get_logger
+from src.graph_arc.state import GlobalState, AgentResultsState
+from src.utils.loggers import get_logger
 from typing import Dict, Any, List, Union
 
 def conditional_router(state: Dict[str, Any]) -> Dict[str, Any]:

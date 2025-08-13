@@ -3,12 +3,12 @@ Soil & Crop Recommendation Agent Node
 Description: Recommends crops based on real soil data and intelligent analysis.
 """
 from typing import Optional
-from graph_arc.state import GlobalState, SoilAgentState
-from utils.loggers import get_logger
-from data.soil_plugins import fetch_soil_data_by_location
+from src.graph_arc.state import GlobalState, SoilAgentState
+from src.utils.loggers import get_logger
+from src.data.soil_plugins import fetch_soil_data_by_location
 from langchain_google_genai import ChatGoogleGenerativeAI
-from config.settings import GEMINI_API_KEY
-from graph_arc.prompts import soil_recommendation_prompt
+from src.config.settings import GEMINI_API_KEY
+from src.graph_arc.prompts import soil_recommendation_prompt
 import re
 import json
 
@@ -252,7 +252,7 @@ def get_enhanced_fallback_data(location: str) -> dict:
     logger.info(f"[SoilCropAgent] Generating enhanced fallback data for {location}")
     
     # Import the fallback function from soil_plugins
-    from data.soil_plugins import get_fallback_soil_data
+    from src.data.soil_plugins import get_fallback_soil_data
     
     base_data = get_fallback_soil_data(location)
     base_data["source"] = "Enhanced Regional Database"

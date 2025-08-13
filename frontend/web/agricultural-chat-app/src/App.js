@@ -1,24 +1,32 @@
 import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
+import { useLanguage } from './contexts/LanguageContext';
+import LanguageSelector from './components/LanguageSelector';
 import './App.css';
 
 const BACKEND_URL = 'http://localhost:5000';
 
 function App() {
+  const { currentLanguage, changeLanguage, t, isRTL } = useLanguage();
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: '🤖 AI Assistant',
-      message: 'नमस्ते! मैं आपका कृषि सहायक हूँ। आप मुझसे फसल, मौसम, मिट्टी, बाजार की कीमतें, और सरकारी योजनाओं के बारे में पूछ सकते हैं।',
-      type: 'ai'
-    }
-  ]);
+  const [messages, setMessages] = useState([]);
   const [query, setQuery] = useState('');
-  const [language, setLanguage] = useState('hi');
   const [isProcessing, setIsProcessing] = useState(false);
   const chatContainerRef = useRef(null);
+
+  // Initialize welcome message based on current language
+  useEffect(() => {
+    setMessages([
+      {
+        id: 1,
+        sender: t('aiAssistant'),
+        message: t('welcomeMessage'),
+        type: 'ai',
+        timestamp: new Date().toLocaleTimeString()
+      }
+    ]);
+  }, [currentLanguage, t]);
 
   // Initialize socket connection
   useEffect(() => {
@@ -38,15 +46,24 @@ function App() {
     newSocket.on('ai_response', (response) => {
       setIsProcessing(false);
       addMessage(
-        '🤖 AI Assistant',
+        t('aiAssistant'),
         response.message || response.response || JSON.stringify(response),
         'ai'
       );
     });
 
+    newSocket.on('ai_status', (statusData) => {
+      // Handle status updates from the server
+      addMessage(
+        t('aiAssistant'),
+        statusData.message,
+        'status'
+      );
+    });
+
     newSocket.on('error', (error) => {
       setIsProcessing(false);
-      addMessage('❌ Error', error.message, 'ai');
+      addMessage(t('error'), error.message || t('errors.serverError'), 'ai');
     });
 
     return () => {
@@ -78,12 +95,12 @@ function App() {
     if (!query.trim() || !socket || !connected || isProcessing) return;
 
     // Add user message
-    addMessage('👤 You', query, 'user');
+    addMessage(t('user'), query, 'user');
 
     // Send to server
     socket.emit('user_query', {
       query: query.trim(),
-      language: language,
+      language: currentLanguage,
       userId: socket.id
     });
 
@@ -92,7 +109,7 @@ function App() {
     
     // Add processing message
     setTimeout(() => {
-      addMessage('🔄 Processing', 'आपका प्रश्न संसाधित हो रहा है...', 'ai');
+      addMessage(t('processing'), t('processingMessage'), 'ai');
     }, 100);
   };
 
@@ -103,28 +120,15 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <div className={`App ${isRTL() ? 'rtl' : 'ltr'}`} dir={isRTL() ? 'rtl' : 'ltr'}>
       <div className="container">
-        <h1>🌾 Agricultural AI Assistant</h1>
+        <h1>{t('appTitle')}</h1>
         
         <div className={`status ${connected ? 'connected' : 'disconnected'}`}>
-          {connected ? '✅ Connected to server' : '🔌 Connecting to server...'}
+          {connected ? t('connected') : t('connecting')}
         </div>
         
-        <div className="language-selector">
-          <label>Language: </label>
-          <select 
-            value={language} 
-            onChange={(e) => setLanguage(e.target.value)}
-            disabled={isProcessing}
-          >
-            <option value="en">English</option>
-            <option value="hi">हिंदी</option>
-            <option value="mr">मराठी</option>
-            <option value="pa">ਪੰਜਾਬੀ</option>
-            <option value="gu">ગુજરાતી</option>
-          </select>
-        </div>
+        <LanguageSelector disabled={isProcessing} />
         
         <div className="chat-container" ref={chatContainerRef}>
           {messages.map((msg) => (
@@ -144,25 +148,41 @@ function App() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="अपना प्रश्न यहाँ लिखें... (जैसे: आज सिंचाई करूं क्या?)"
+            placeholder={t('inputPlaceholder')}
             disabled={!connected || isProcessing}
           />
           <button 
             onClick={sendQuery}
             disabled={!connected || !query.trim() || isProcessing}
           >
-            {isProcessing ? '⏳' : 'Send'}
+            {isProcessing ? t('sendingButton') : t('sendButton')}
           </button>
         </div>
         
         <div className="features-info">
-          <h3>🔧 Available Features:</h3>
+          <h3>{t('featuresTitle')}</h3>
           <div className="feature-list">
-            <span className="feature-tag">🌾 Crop Management</span>
-            <span className="feature-tag">💰 Market Prices</span>
-            <span className="feature-tag">🌡️ Weather Info</span>
-            <span className="feature-tag">🔬 Soil Analysis</span>
-            <span className="feature-tag">🏛️ Government Schemes</span>
+            <span className="feature-tag">{t('features.cropManagement')}</span>
+            <span className="feature-tag">{t('features.marketPrices')}</span>
+            <span className="feature-tag">{t('features.weatherInfo')}</span>
+            <span className="feature-tag">{t('features.soilAnalysis')}</span>
+            <span className="feature-tag">{t('features.governmentSchemes')}</span>
+          </div>
+        </div>
+
+        <div className="sample-questions">
+          <h3>{t('sampleQuestions.title')}</h3>
+          <div className="questions-list">
+            {t('sampleQuestions.questions').map((question, index) => (
+              <button
+                key={index}
+                className="sample-question-btn"
+                onClick={() => setQuery(question)}
+                disabled={isProcessing || !connected}
+              >
+                {question}
+              </button>
+            ))}
           </div>
         </div>
       </div>

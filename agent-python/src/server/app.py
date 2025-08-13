@@ -18,8 +18,15 @@ from pydantic import BaseModel, ValidationError
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from graph_arc.graph import workflow
-from utils.loggers import get_logger
+# Use optimized workflow for better performance
+try:
+    from src.graph_arc.optimized_graph import workflow_optimized as workflow
+    print("🚀 Using optimized workflow for enhanced performance")
+except ImportError:
+    # Fallback to standard workflow if optimized version fails
+    from src.graph_arc.graph import workflow
+    print("⚠️ Using standard workflow (optimized version not available)")
+from src.utils.loggers import get_logger
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -138,11 +145,19 @@ async def process_agricultural_query(message: ChatMessage) -> Dict:
         await manager.send_status_update("processing", message.user_id, {"stage": "analyzing_query"})
         
         # Process through workflow (this runs synchronously)
-        logger.info("[AgriProcessor] Invoking agricultural workflow")
+        logger.info("[AgriProcessor] Invoking optimized agricultural workflow")
+        start_time_workflow = datetime.now()
         result = workflow.invoke(initial_state)
+        workflow_time = (datetime.now() - start_time_workflow).total_seconds()
+        
+        # Log performance metrics
+        logger.info(f"[AgriProcessor] Workflow completed in {workflow_time:.2f}s")
         
         # Send status update
-        await manager.send_status_update("processing", message.user_id, {"stage": "generating_response"})
+        await manager.send_status_update("processing", message.user_id, {
+            "stage": "generating_response", 
+            "workflow_time": f"{workflow_time:.2f}s"
+        })
         
         # Process result for WebSocket response
         processed_result = {

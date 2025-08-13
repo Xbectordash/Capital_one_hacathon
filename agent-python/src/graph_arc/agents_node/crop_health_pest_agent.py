@@ -2,8 +2,8 @@
 Crop Health & Pest Agent Node
 Description: Diagnoses crop health and pest issues.
 """
-from graph_arc.state import GlobalState, CropHealthState
-from utils.loggers import get_logger
+from src.graph_arc.state import GlobalState, CropHealthState
+from src.utils.loggers import get_logger
 
 def crop_health_pest_agent(state: GlobalState) -> CropHealthState:
     """

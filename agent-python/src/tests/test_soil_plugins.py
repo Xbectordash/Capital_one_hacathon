@@ -13,14 +13,14 @@ project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
 
 # Import the modules to test
-from data.soil_plugins import (
+from src.data.soil_plugins import (
     fetch_soil_data_by_location, 
     fetch_soil_data, 
     get_location_coordinates,
     format_soil_data,
     get_fallback_soil_data
 )
-from graph_arc.agents_node.soil_crop_recommendation_agent import (
+from src.graph_arc.agents_node.soil_crop_recommendation_agent import (
     soil_crop_recommendation_agent,
     extract_crops_from_response,
     get_fallback_recommendations

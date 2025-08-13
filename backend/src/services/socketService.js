@@ -1,5 +1,6 @@
 const { Server } = require('socket.io')
 const WebSocket = require('ws')
+const { isLanguageSupported, getStatusMessage, getLabel, getErrorMessage } = require('../config/languageConfig')
 
 class SocketService {
     constructor() {
@@ -7,6 +8,7 @@ class SocketService {
         this.pythonConnections = new Map()
         // Use environment variable or Docker container name
         this.PYTHON_SERVER_URL = process.env.PYTHON_SERVER_URL || 'ws://agent-python:8000'
+        console.log(`🔧 SocketService initialized with Python server URL: ${this.PYTHON_SERVER_URL}`)
     }
 
     initialize(server) {
@@ -24,7 +26,7 @@ class SocketService {
 
     setupSocketHandlers() {
         this.io.on('connection', (socket) => {
-            console.log(`👤 User connected: ${socket.id}`)
+            console.log(`👤 New user connected with socket ID: ${socket.id}`)
             
             socket.on('user_query', async (data) => {
                 await this.handleUserQuery(socket, data)
@@ -33,64 +35,83 @@ class SocketService {
             socket.on('disconnect', () => {
                 this.handleDisconnect(socket)
             })
+
+            socket.on('error', (error) => {
+                console.error(`❌ Socket error for user ${socket.id}:`, error)
+            })
         })
     }
 
     async handleUserQuery(socket, data) {
-        const { query, userId = socket.id, language = 'hi' } = data
-        console.log(`📝 Received query from ${userId}: ${query}`)
+        const { query, userId = socket.id, language = 'en' } = data
+        
+        // Validate language support
+        const supportedLang = isLanguageSupported(language) ? language : 'en'
+        if (language !== supportedLang) {
+            console.log(`⚠️  Unsupported language '${language}' for user ${userId}, defaulting to English`)
+        }
+        
+        console.log(`📝 Received query from ${userId} in language '${supportedLang}': ${query}`)
         
         try {
             let pythonWs = this.pythonConnections.get(userId)
             
             if (!pythonWs || pythonWs.readyState !== WebSocket.OPEN) {
-                pythonWs = await this.connectToPythonServer(userId, socket, language)
+                pythonWs = await this.connectToPythonServer(userId, socket, supportedLang)
             }
             
             if (!pythonWs) {
-                socket.emit('error', { message: 'Failed to connect to AI server' })
+                console.error(`❌ Failed to establish connection to Python AI server for user ${userId}`)
+                socket.emit('error', { message: getErrorMessage('connectionError', supportedLang) })
                 return
             }
             
             const queryData = {
                 raw_query: query,
-                language: language,
+                language: supportedLang,
                 user_id: userId
             }
             
+            console.log(`🚀 Sending query to Python server for user ${userId} with language: ${supportedLang}`)
             pythonWs.send(JSON.stringify(queryData))
             
         } catch (error) {
-            console.error(`❌ Error processing query for ${userId}:`, error)
-            socket.emit('error', { message: 'Internal server error' })
+            console.error(`❌ Error processing query for user ${userId}:`, error)
+            socket.emit('error', { message: getErrorMessage('serverError', supportedLang) })
         }
     }
 
     handlePythonResponse(socket, message, language) {
         try {
             const response = JSON.parse(message.toString())
-            console.log(`📤 Python response type: ${response.type}`)
+            console.log(`📤 Received Python response type: ${response.type} for language: ${language}`)
             
             // Only send final responses to the client, not intermediate status updates
             if (response.type === 'connection_established') {
-                console.log('✅ Python connection established')
+                console.log('✅ Python AI server connection established successfully')
                 return
             }
             
             if (response.type === 'message_received') {
                 socket.emit('ai_status', { 
-                    message: 'आपका प्रश्न प्राप्त हुआ है। कृपया प्रतीक्षा करें...',
+                    message: getStatusMessage('messageReceived', language),
                     status: 'received'
                 })
                 return
             }
             
             if (response.type === 'status_update') {
-                const statusMessages = {
-                    'analyzing_query': 'आपके प्रश्न का विश्लेषण हो रहा है...',
-                    'generating_response': 'उत्तर तैयार किया जा रहा है...'
+                const stage = response.details?.stage
+                let statusMsg
+                
+                if (stage === 'analyzing_query') {
+                    statusMsg = getStatusMessage('analyzingQuery', language)
+                } else if (stage === 'generating_response') {
+                    statusMsg = getStatusMessage('generatingResponse', language)
+                } else {
+                    statusMsg = getStatusMessage('processing', language)
                 }
-                const statusMsg = statusMessages[response.details?.stage] || 'प्रक्रिया जारी है...'
+                
                 socket.emit('ai_status', { 
                     message: statusMsg,
                     status: 'processing'
@@ -100,13 +121,14 @@ class SocketService {
             
             // Handle the final agricultural response
             if (response.type === 'agricultural_response' && response.success && response.data) {
+                console.log(`✅ Successfully processed agricultural response for language: ${language}`)
                 const data = response.data
                 let formattedResponse = ''
                 
                 if (data.translated_response && language !== 'en') {
                     formattedResponse = data.translated_response
                     if (data.translated_explanation) {
-                        formattedResponse += '\n\nविस्तार: ' + data.translated_explanation
+                        formattedResponse += `\n\n${getLabel('explanation', language)}: ${data.translated_explanation}`
                     }
                 } else {
                     formattedResponse = data.final_advice || 'No advice available'
@@ -116,44 +138,49 @@ class SocketService {
                 }
                 
                 if (data.location && data.location !== 'Unknown') {
-                    formattedResponse += `\n\n📍 स्थान: ${data.location}`
+                    formattedResponse += `\n\n📍 ${getLabel('location', language)}: ${data.location}`
                 }
                 
                 if (data.detected_intents && data.detected_intents.length > 0) {
-                    formattedResponse += `\n\n🎯 विषय: ${data.detected_intents.join(', ')}`
+                    formattedResponse += `\n\n🎯 ${getLabel('topic', language)}: ${data.detected_intents.join(', ')}`
                 }
                 
                 socket.emit('ai_response', {
                     message: formattedResponse,
                     success: true,
                     type: 'agricultural_advice',
+                    language: language,
                     timestamp: new Date().toISOString()
                 })
             } else if (response.message) {
+                console.log(`📝 Sending general response for language: ${language}`)
                 socket.emit('ai_response', {
                     message: response.message,
                     success: response.success !== false,
+                    language: language,
                     timestamp: new Date().toISOString()
                 })
             }
         } catch (error) {
-            console.error('Error parsing Python response:', error)
-            socket.emit('error', { message: 'Failed to process AI response' })
+            console.error('❌ Error parsing Python response:', error)
+            socket.emit('error', { message: getErrorMessage('responseError', language) })
         }
     }
 
     async connectToPythonServer(userId, socket, language) {
         try {
+            console.log(`🔗 Attempting to connect to Python AI server for user: ${userId} with language: ${language}`)
             const ws = new WebSocket(`${this.PYTHON_SERVER_URL}/ws/${userId}`)
             
             return new Promise((resolve, reject) => {
                 const timeout = setTimeout(() => {
+                    console.error(`⏰ Connection timeout for user ${userId} after 10 seconds`)
                     reject(new Error('Connection timeout'))
                 }, 10000) // 10 second timeout
                 
                 ws.on('open', () => {
                     clearTimeout(timeout)
-                    console.log(`🔗 Connected to Python server for user: ${userId}`)
+                    console.log(`✅ Successfully connected to Python AI server for user: ${userId}`)
                     resolve(ws)
                 })
                 
@@ -163,19 +190,19 @@ class SocketService {
                 
                 ws.on('error', (error) => {
                     clearTimeout(timeout)
-                    console.error(`❌ Python server connection error for ${userId}:`, error.message)
+                    console.error(`❌ Python AI server connection error for user ${userId}:`, error.message)
                     reject(error)
                 })
                 
                 ws.on('close', () => {
-                    console.log(`🔌 Python server connection closed for user: ${userId}`)
+                    console.log(`🔌 Python AI server connection closed for user: ${userId}`)
                     this.pythonConnections.delete(userId)
                 })
                 
                 this.pythonConnections.set(userId, ws)
             })
         } catch (error) {
-            console.error(`❌ Failed to connect to Python server for ${userId}:`, error.message)
+            console.error(`❌ Failed to connect to Python AI server for user ${userId}:`, error.message)
             return null
         }
     }
@@ -185,13 +212,30 @@ class SocketService {
         
         const pythonWs = this.pythonConnections.get(socket.id)
         if (pythonWs) {
+            console.log(`🔌 Closing Python AI server connection for user: ${socket.id}`)
             pythonWs.close()
             this.pythonConnections.delete(socket.id)
         }
+        
+        console.log(`📊 Active connections remaining: ${this.pythonConnections.size}`)
     }
 
     getConnectionsCount() {
         return this.pythonConnections.size
+    }
+
+    getConnectionStats() {
+        const activeConnections = Array.from(this.pythonConnections.entries()).map(([userId, ws]) => ({
+            userId,
+            state: ws.readyState,
+            connected: ws.readyState === WebSocket.OPEN
+        }))
+        
+        return {
+            total: this.pythonConnections.size,
+            active: activeConnections.filter(conn => conn.connected).length,
+            connections: activeConnections
+        }
     }
 }
 

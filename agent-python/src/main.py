@@ -1,4 +1,4 @@
-from graph_arc.graph import workflow
+from src.graph_arc.graph import workflow
 import json
 
 def main():

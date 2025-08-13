@@ -19,7 +19,7 @@ from plugins.government_schemes_plugin import (
     calculate_eligibility_score,
     get_fallback_schemes_data
 )
-from graph_arc.agents_node.government_schemes_agent import (
+from src.graph_arc.agents_node.government_schemes_agent import (
     government_schemes_agent,
     extract_farmer_profile,
     calculate_data_quality_score,
@@ -27,7 +27,7 @@ from graph_arc.agents_node.government_schemes_agent import (
     extract_top_schemes,
     generate_eligibility_summary
 )
-from graph_arc.state import GlobalState
+from src.graph_arc.state import GlobalState
 
 class TestGovernmentSchemesPlugin(unittest.TestCase):
     """Test cases for government schemes plugin with mocked scenarios"""

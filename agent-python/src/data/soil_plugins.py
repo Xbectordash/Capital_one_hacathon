@@ -5,8 +5,8 @@ Description: Fetches soil data from various APIs and provides soil analysis func
 import os
 import requests
 from typing import Dict, Optional
-from utils.loggers import get_logger
-from config.settings import GEMINI_API_KEY
+from src.utils.loggers import get_logger
+from src.config.settings import GEMINI_API_KEY
 
 def fetch_soil_data(latitude: float, longitude: float, location_name: str = "Unknown") -> Dict:
     """

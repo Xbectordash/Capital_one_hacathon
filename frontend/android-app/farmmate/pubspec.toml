@@ -1,0 +1,113 @@
+# FarmMate Flutter Mobile App - TOML Configuration
+# Alternative to pubspec.yaml for better readability
+
+[package]
+name = "farmmate"
+description = "FarmMate Agricultural AI - Flutter Mobile Application"
+version = "1.0.0+1"
+
+[package.repository]
+type = "git" 
+url = "https://github.com/Xbectordash/Capital_one_hacathon.git"
+directory = "frontend/android-app/farmmate"
+
+[package.author]
+name = "FarmMate Team"
+email = "team@farmmate.ai"
+
+[environment]
+sdk = ">=3.2.3 <4.0.0"
+flutter = ">=3.16.0"
+
+[dependencies]
+flutter = { sdk = "flutter" }
+cupertino_icons = "^1.0.2"
+http = "^1.1.0"
+socket_io_client = "^2.0.3+1"
+provider = "^6.1.1"
+shared_preferences = "^2.2.2"
+permission_handler = "^11.1.0"
+geolocator = "^10.1.0"
+camera = "^0.10.5+5"
+image_picker = "^1.0.4"
+path_provider = "^2.1.1"
+connectivity_plus = "^5.0.2"
+url_launcher = "^6.2.1"
+intl = "^0.19.0"
+
+[dev_dependencies]
+flutter_test = { sdk = "flutter" }
+flutter_lints = "^3.0.0"
+integration_test = { sdk = "flutter" }
+mockito = "^5.4.4"
+build_runner = "^2.4.7"
+
+[flutter]
+uses_material_design = true
+
+[flutter.assets]
+paths = [
+    "assets/images/",
+    "assets/icons/",
+    "assets/animations/"
+]
+
+[flutter.fonts]
+# Custom fonts for better UI
+[flutter.fonts.Poppins]
+family = "Poppins"
+[[flutter.fonts.Poppins.fonts]]
+asset = "assets/fonts/Poppins-Regular.ttf"
+[[flutter.fonts.Poppins.fonts]]
+asset = "assets/fonts/Poppins-Bold.ttf"
+weight = 700
+
+[config]
+api_base_url = "http://10.0.2.2:5000"  # Android emulator localhost
+socket_url = "http://10.0.2.2:5000"
+app_name = "FarmMate"
+package_name = "com.farmmate.agricultural_ai"
+
+[config.features]
+camera_integration = true
+location_services = true
+offline_mode = true
+push_notifications = true
+multi_language = true
+
+[config.supported_languages]
+languages = ["en", "hi", "mr", "pa", "gu", "ta", "te", "bn", "kn", "ml"]
+
+[config.permissions]
+required = [
+    "INTERNET",
+    "ACCESS_FINE_LOCATION", 
+    "ACCESS_COARSE_LOCATION",
+    "CAMERA",
+    "READ_EXTERNAL_STORAGE",
+    "WRITE_EXTERNAL_STORAGE"
+]
+
+[build]
+[build.android]
+compile_sdk_version = 34
+min_sdk_version = 21
+target_sdk_version = 34
+
+[build.ios]
+platform = "13.0"
+
+[testing]
+integration_enabled = true
+unit_tests = true
+widget_tests = true
+
+[deployment]
+[deployment.android]
+build_type = "apk"
+signing = "debug"
+obfuscate = false
+
+[deployment.ios]
+build_type = "ipa"
+provisioning = "development"

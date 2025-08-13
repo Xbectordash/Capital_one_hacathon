@@ -2,8 +2,8 @@
 Market Price Agent Node
 Description: Provides market price information for commodities.
 """
-from graph_arc.state import GlobalState, MarketState
-from utils.loggers import get_logger
+from src.graph_arc.state import GlobalState, MarketState
+from src.utils.loggers import get_logger
 
 def market_price_agent(state: GlobalState) -> MarketState:
     """

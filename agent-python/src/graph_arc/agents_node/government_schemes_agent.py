@@ -4,14 +4,14 @@ Description: Analyzes user location and profile to recommend applicable governme
 """
 import json
 from typing import Dict, List
-from utils.loggers import get_logger
-from graph_arc.state import GlobalState, PolicyState
-from data.government_schemes_plugin import (
+from src.utils.loggers import get_logger
+from src.graph_arc.state import GlobalState, PolicyState
+from src.data.government_schemes_plugin import (
     get_schemes_by_location_and_profile, 
     get_fallback_schemes_data
 )
-from config.settings import GEMINI_API_KEY
-from graph_arc.prompts import government_schemes_prompt
+from src.config.settings import GEMINI_API_KEY
+from src.graph_arc.prompts import government_schemes_prompt
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 # LLM will be initialized when needed

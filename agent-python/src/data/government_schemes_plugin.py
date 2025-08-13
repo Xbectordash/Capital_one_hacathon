@@ -5,8 +5,8 @@ Description: Fetches real-time government schemes data from various APIs and pro
 import os
 import requests
 from typing import Dict, List, Optional
-from utils.loggers import get_logger
-from config.settings import GEMINI_API_KEY
+from src.utils.loggers import get_logger
+from src.config.settings import GEMINI_API_KEY
 
 # Central Government Scheme APIs
 CENTRAL_SCHEME_APIS = {

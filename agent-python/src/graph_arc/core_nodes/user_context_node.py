@@ -1,5 +1,5 @@
-from graph_arc.state import GlobalState
-from utils.loggers import get_logger
+from src.graph_arc.state import GlobalState
+from src.utils.loggers import get_logger
 
 """
 User Context Node

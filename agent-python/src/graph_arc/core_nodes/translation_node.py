@@ -2,12 +2,12 @@
 Translation Agent Node - Simple and Clean
 Task: Read final decision + explanation, translate to local language
 """
-from graph_arc.state import GlobalState
-from utils.loggers import get_logger
+from src.graph_arc.state import GlobalState
+from src.utils.loggers import get_logger
 from langchain_core.runnables import RunnableConfig
-from config.model_conf import Configuration
+from src.config.model_conf import Configuration
 from langchain_google_genai import ChatGoogleGenerativeAI
-from config.settings import GEMINI_API_KEY
+from src.config.settings import GEMINI_API_KEY
 import json
 import re
 

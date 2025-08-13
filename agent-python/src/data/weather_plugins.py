@@ -1,8 +1,8 @@
 import os
 import requests
 from typing import Dict
-from utils.loggers import get_logger
-from config.settings import WEATHER_API
+from src.utils.loggers import get_logger
+from src.config.settings import WEATHER_API
 
 def fetch_weather_data(city_name: str) -> Dict:
     """

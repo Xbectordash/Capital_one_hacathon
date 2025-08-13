@@ -123,6 +123,15 @@ h1 {
   border-top-left-radius: 5px;
 }
 
+.status-message {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.3), rgba(255, 193, 7, 0.1));
+  margin-right: 20%;
+  border-top-left-radius: 5px;
+  border-left: 4px solid rgba(255, 193, 7, 0.6);
+  font-style: italic;
+  opacity: 0.9;
+}
+
 .message-header {
   display: flex;
   justify-content: space-between;
@@ -210,6 +219,7 @@ button:disabled {
   border-radius: 15px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(5px);
+  margin-bottom: 20px;
 }
 
 .features-info h3 {
@@ -238,6 +248,110 @@ button:disabled {
 .feature-tag:hover {
   background: rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
+}
+
+/* Sample Questions Section */
+.sample-questions {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  margin-bottom: 20px;
+}
+
+.sample-questions h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sample-question-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  font-size: 14px;
+  backdrop-filter: blur(5px);
+  min-width: auto;
+}
+
+.sample-question-btn:hover:not(:disabled) {
+  background: rgba(103, 126, 234, 0.3);
+  border-color: rgba(103, 126, 234, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 15px rgba(103, 126, 234, 0.3);
+}
+
+.sample-question-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* RTL Support */
+.App.rtl {
+  direction: rtl;
+}
+
+.App.rtl .user-message {
+  margin-right: 20%;
+  margin-left: 0;
+  border-top-right-radius: 15px;
+  border-top-left-radius: 5px;
+}
+
+.App.rtl .ai-message {
+  margin-left: 20%;
+  margin-right: 0;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 5px;
+}
+
+.App.rtl .message-header {
+  flex-direction: row-reverse;
+}
+
+.App.rtl .input-container {
+  flex-direction: row-reverse;
+}
+
+.App.rtl .sample-question-btn {
+  text-align: right;
+}
+
+/* Language Loading */
+.language-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.loading-spinner {
+  font-size: 2rem;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Mobile Responsive */
@@ -279,5 +393,21 @@ button:disabled {
   .feature-tag {
     font-size: 0.8rem;
     padding: 6px 12px;
+  }
+  
+  .sample-question-btn {
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+  
+  /* RTL Mobile adjustments */
+  .App.rtl .user-message {
+    margin-right: 10%;
+    margin-left: 0;
+  }
+  
+  .App.rtl .ai-message {
+    margin-left: 10%;
+    margin-right: 0;
   }
 }

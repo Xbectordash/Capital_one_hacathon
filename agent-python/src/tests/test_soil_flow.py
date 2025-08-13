@@ -7,7 +7,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from graph_arc.agents_node.soil_crop_recommendation_agent import soil_crop_recommendation_agent
+from src.graph_arc.agents_node.soil_crop_recommendation_agent import soil_crop_recommendation_agent
 
 def test_soil_crop_flow():
     """Test the complete flow with weather data in GlobalState"""
