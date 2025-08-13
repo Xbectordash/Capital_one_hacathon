@@ -1,8 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
 import 'package:farmmate/features/chat/models/chat_message.dart';
-import 'package:farmmate/utils/constants/app_colors.dart';
-import 'package:farmmate/utils/constants/app_sizes.dart';
 import 'package:flutter/material.dart';
 
 class ChatBubble extends StatelessWidget {
