@@ -1,11 +1,11 @@
 """
 Soil & Crop Recommendation Agent Node
-Description: Recommends crops based on real soil data and intelligent analysis.
+Description: Recommends crops based on CSV soil data and intelligent analysis.
 """
 from typing import Optional
 from src.graph_arc.state import GlobalState, SoilAgentState
 from src.utils.loggers import get_logger
-from src.data.soil_plugins import fetch_soil_data_by_location
+from src.data.soil_plugins import get_soil_data_from_csv, fetch_soil_data_by_location
 from langchain_google_genai import ChatGoogleGenerativeAI
 from src.config.settings import GEMINI_API_KEY
 from src.graph_arc.prompts import soil_recommendation_prompt
@@ -35,18 +35,18 @@ def soil_crop_recommendation_agent(state: GlobalState) -> SoilAgentState:
     logger.info(f"[SoilCropAgent] User query: {user_query}")
     logger.info(f"[SoilCropAgent] Available weather data: {bool(weather_data)}")
 
-    # Fetch comprehensive soil data
+    # Fetch comprehensive soil data using CSV-based plugin
     try:
-        soil_health = fetch_soil_data_by_location(location)
+        soil_health = get_soil_data_from_csv(location, user_query)
         actual_soil_type = soil_health.get("soil_type", "Unknown")
-        logger.info(f"[SoilCropAgent] Real soil data acquired: {soil_health}")
+        logger.info(f"[SoilCropAgent] CSV soil data acquired: {soil_health.get('location', location)}")
         
         # Validate data quality
         data_quality_score = calculate_data_quality(soil_health)
         logger.info(f"[SoilCropAgent] Soil data quality score: {data_quality_score}/10")
         
     except Exception as e:
-        logger.error(f"[SoilCropAgent] Failed to fetch soil data: {e}")
+        logger.error(f"[SoilCropAgent] Failed to fetch CSV soil data: {e}")
         soil_health = get_enhanced_fallback_data(location)
         actual_soil_type = soil_health.get("soil_type", "Loam")
         data_quality_score = 6  # Fallback data quality
@@ -64,7 +64,7 @@ def soil_crop_recommendation_agent(state: GlobalState) -> SoilAgentState:
         # Create enhanced context with weather integration
         enhanced_context = create_enhanced_context(soil_health, weather_data, location, user_query)
         
-        # Format the enhanced prompt
+        # Format the enhanced prompt with CSV data
         format_prompt = soil_recommendation_prompt.format(
             ph=soil_health.get("ph", "N/A"),
             nitrogen=soil_health.get("nitrogen", "N/A"),
@@ -75,7 +75,7 @@ def soil_crop_recommendation_agent(state: GlobalState) -> SoilAgentState:
             soil_type=actual_soil_type if actual_soil_type != "Unknown" else soil_type_from_query,
             fertility_status=soil_health.get("fertility_status", "N/A"),
             location=location,
-            user_query=enhanced_context
+            user_query=enhanced_context + f" | Zinc: {soil_health.get('zinc_status', 'N/A')} | Iron: {soil_health.get('iron_status', 'N/A')} | Micronutrients: Available"
         )
         
         logger.info("[SoilCropAgent] Invoking ENHANCED LLM with comprehensive context")
@@ -252,9 +252,9 @@ def get_enhanced_fallback_data(location: str) -> dict:
     logger.info(f"[SoilCropAgent] Generating enhanced fallback data for {location}")
     
     # Import the fallback function from soil_plugins
-    from src.data.soil_plugins import get_fallback_soil_data
+    from src.data.soil_plugins import get_fallback_soil_knowledge
     
-    base_data = get_fallback_soil_data(location)
+    base_data = get_fallback_soil_knowledge(location, "general agricultural guidance")
     base_data["source"] = "Enhanced Regional Database"
     base_data["confidence"] = "High (Regional Patterns)"
     base_data["data_type"] = "Scientifically Calibrated Fallback"

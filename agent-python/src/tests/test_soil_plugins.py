@@ -14,11 +14,12 @@ sys.path.insert(0, str(project_root))
 
 # Import the modules to test
 from src.data.soil_plugins import (
+    get_soil_data_from_csv,
     fetch_soil_data_by_location, 
-    fetch_soil_data, 
-    get_location_coordinates,
-    format_soil_data,
-    get_fallback_soil_data
+    find_district_in_csv,
+    analyze_district_nutrients,
+    classify_nutrients,
+    get_fallback_soil_knowledge
 )
 from src.graph_arc.agents_node.soil_crop_recommendation_agent import (
     soil_crop_recommendation_agent,
