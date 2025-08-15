@@ -18,14 +18,13 @@ from pydantic import BaseModel, ValidationError
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-# Use optimized workflow for better performance
+# Use standard workflow
 try:
-    from src.graph_arc.optimized_graph import workflow_optimized as workflow
-    print("🚀 Using optimized workflow for enhanced performance")
-except ImportError:
-    # Fallback to standard workflow if optimized version fails
     from src.graph_arc.graph import workflow
-    print("⚠️ Using standard workflow (optimized version not available)")
+    print("🚀 Using standard workflow")
+except ImportError:
+    print("❌ Error: Could not import workflow from src.graph_arc.graph")
+    raise
 from src.utils.loggers import get_logger
 
 # Initialize FastAPI app

@@ -86,11 +86,10 @@ class PerformanceTester:
         self.logger.info(f"[PerfTest] Starting performance comparison with {iterations} iterations")
         
         try:
-            # Import workflows
+            # Import standard workflow only
             from src.graph_arc.graph import workflow as standard_workflow
-            from src.graph_arc.optimized_graph import workflow_optimized as optimized_workflow
             
-            self.logger.info("[PerfTest] Both workflows imported successfully")
+            self.logger.info("[PerfTest] Standard workflow imported successfully")
             
         except ImportError as e:
             self.logger.error(f"[PerfTest] Failed to import workflows: {e}")
@@ -112,21 +111,11 @@ class PerformanceTester:
                 standard_result = self.test_workflow(standard_workflow, query_data, "standard")
                 all_results.append(standard_result)
                 
-                # Small delay between tests
-                time.sleep(1)
-                
-                # Test optimized workflow
-                self.logger.info("[PerfTest] Running optimized workflow...")
-                optimized_result = self.test_workflow(optimized_workflow, query_data, "optimized")
-                all_results.append(optimized_result)
-                
-                # Print comparison for this query
-                if standard_result["success"] and optimized_result["success"]:
-                    improvement = ((standard_result["execution_time"] - optimized_result["execution_time"]) / 
-                                 standard_result["execution_time"]) * 100
-                    
-                    self.logger.info(f"[PerfTest] ⚡ Performance improvement: {improvement:.1f}% " +
-                                   f"({standard_result['execution_time']:.2f}s → {optimized_result['execution_time']:.2f}s)")
+                # Print result for this query
+                if standard_result["success"]:
+                    self.logger.info(f"[PerfTest] ✅ Query processed successfully in {standard_result['execution_time']:.2f}s")
+                else:
+                    self.logger.error(f"[PerfTest] ❌ Query failed: {standard_result.get('error', 'Unknown error')}")
                 
                 # Delay between different queries
                 time.sleep(2)

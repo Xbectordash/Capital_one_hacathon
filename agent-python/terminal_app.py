@@ -15,9 +15,9 @@ src_path = project_root / "src"
 sys.path.insert(0, str(src_path))
 
 try:
-    from src.main import process_user_query_optimized
-    from src.data.soil_plugins import get_soil_data_from_csv, fetch_soil_data_by_location
-    from src.data.weather_plugins import get_weather_data
+    from src.graph_arc.graph import workflow
+    from src.data.soil_plugins import get_soil_data_from_csv
+    from src.data.weather_plugins import fetch_weather_data
     from src.utils.loggers import get_logger
 except ImportError as e:
     print(f"❌ Import Error: {e}")
@@ -273,7 +273,7 @@ class FarmMateTerminalApp:
                 weather_data = self.session_data["weather_cache"][location]
                 print("📋 Using cached weather data")
             else:
-                weather_data = get_weather_data(location)
+                weather_data = fetch_weather_data(location)
                 self.session_data["weather_cache"][location] = weather_data
                 
             # Display weather
@@ -289,20 +289,42 @@ class FarmMateTerminalApp:
             print("💡 Try asking: 'weather for [your location]'")
             
     def process_query(self, query):
-        """Process user query using the main FarmMate system"""
+        """Process user query using the FarmMate workflow"""
         self.session_data["query_count"] += 1
         
         print(f"\n🤔 Processing: {query}")
         print("⏳ Analyzing with FarmMate AI...")
         
         try:
-            # Use the main FarmMate processing system
-            response = process_user_query_optimized(query)
+            # Create initial state for the workflow
+            initial_state = {
+                "user_id": "terminal_user",
+                "raw_query": query,
+                "language": "en"  # Default to English for terminal
+            }
+            
+            # Use the workflow to process the query
+            result = workflow.invoke(initial_state)
+            
+            # Extract the response from the result
+            if result.get("decision"):
+                response = result["decision"].get("final_advice", "No advice available")
+                explanation = result["decision"].get("explanation", "")
+            else:
+                response = "I couldn't process your query. Please try rephrasing it."
+                explanation = ""
             
             print("\n" + "="*60)
             print("🤖 FARMMATE AI RESPONSE")
             print("="*60)
             print(response)
+            
+            if explanation:
+                print("\n" + "-"*40)
+                print("📋 DETAILED EXPLANATION:")
+                print("-"*40)
+                print(explanation)
+            
             print("="*60)
             
         except Exception as e:
@@ -314,13 +336,7 @@ class FarmMateTerminalApp:
         """Main application loop"""
         try:
             self.print_banner()
-            
-            # Setup user profile
-            setup = input("🔧 Would you like to set up your profile? (y/n): ").strip().lower()
-            if setup in ['y', 'yes', 'Y']:
-                self.setup_user_profile()
-            else:
-                print("💡 You can set up your profile anytime with 'profile' command.\n")
+            print("� Type 'profile' to set up your location, 'help' for commands, or ask any farming question!\n")
             
             # Main loop
             while True:

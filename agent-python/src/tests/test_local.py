@@ -15,17 +15,17 @@ sys.path.insert(0, project_root)
 from dotenv import load_dotenv
 load_dotenv()
 
-def test_optimized_graph():
-    """Test the optimized graph with a simple agricultural query"""
+def test_standard_graph():
+    """Test the standard graph with a simple agricultural query"""
     
-    print("🧪 Testing Optimized Graph Locally")
+    print("🧪 Testing Standard Graph Locally")
     print("=" * 50)
     
     try:
-        # Import the optimized graph
-        from src.graph_arc.optimized_graph import workflow_optimized as workflow
+        # Import the standard graph
+        from src.graph_arc.graph import workflow
         
-        print("✅ Successfully imported optimized_graph")
+        print("✅ Successfully imported standard graph")
         
         # Test query
         test_query = {
@@ -145,7 +145,7 @@ if __name__ == "__main__":
     if sync_success:
         print("\n🎯 Sync tests passed, proceeding with workflow test...")
         # Test workflow
-        workflow_success = test_optimized_graph()
+        workflow_success = test_standard_graph()
         
         if workflow_success:
             print("\n🎉 ALL TESTS PASSED! The AI agent is working correctly.")

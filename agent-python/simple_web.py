@@ -18,7 +18,7 @@ src_path = project_root / "src"
 sys.path.insert(0, str(src_path))
 
 try:
-    from src.main import process_user_query_optimized
+    from src.graph_arc.graph import workflow
     from src.data.soil_plugins import get_soil_data_from_csv, fetch_soil_data_by_location
     from src.data.weather_plugins import get_weather_data
     from src.utils.loggers import get_logger
@@ -455,8 +455,21 @@ def handle_query():
             
         logger.info(f"Processing web query: {enhanced_query}")
         
-        # Process with FarmMate AI
-        response = process_user_query_optimized(enhanced_query)
+        # Create initial state for the workflow
+        initial_state = {
+            "user_id": "web_user",
+            "raw_query": enhanced_query,
+            "language": "en"  # Default to English for web
+        }
+        
+        # Process with FarmMate AI workflow
+        result = workflow.invoke(initial_state)
+        
+        # Extract the response from the result
+        if result.get("decision"):
+            response = result["decision"].get("final_advice", "No advice available")
+        else:
+            response = "I couldn't process your query. Please try rephrasing it."
         
         return jsonify({
             'success': True,
