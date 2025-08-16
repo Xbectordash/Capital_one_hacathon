@@ -2,7 +2,7 @@
 Decision Support Node
 Description: Aggregates outputs from all agent nodes for final advice using LLM.
 """
-from src.graph_arc.state import GlobalState, AgentResultsState, DecisionState
+from src.graph_arc.state import GlobalState
 from src.utils.loggers import get_logger
 from langchain_core.runnables import RunnableConfig
 from src.config.model_conf import Configuration
@@ -13,7 +13,7 @@ from typing import Dict, Any
 import json
 import re
 
-def decision_support_agent(state: GlobalState) -> DecisionState:
+def decision_support_agent(state: GlobalState) -> Dict[str, Any]:
     """
     Process decision support requests and aggregate information from other agents.
     
@@ -21,7 +21,7 @@ def decision_support_agent(state: GlobalState) -> DecisionState:
         state: The global state containing user query and entities
         
     Returns:
-        DecisionState with aggregated data and recommendations
+        Decision dictionary with aggregated data and recommendations
     """
     logger = get_logger("decision_support_agent")
     logger.info(f"[DecisionSupportAgent] Processing decision support for query: {state.get('raw_query', 'Unknown')}")
@@ -61,28 +61,28 @@ def decision_support_agent(state: GlobalState) -> DecisionState:
     
     logger.info(f"[DecisionSupportAgent] Generated final advice: {final_advice}")
     
-    # Return properly typed state
-    return DecisionState(
-        aggregated_data=aggregated_data,
-        final_advice=final_advice,
-        explanation=explanation
-    )
+    # Return properly formatted dictionary
+    return {
+        "aggregated_data": aggregated_data,
+        "final_advice": final_advice,
+        "explanation": explanation
+    }
 
-def aggregate_decisions(state: Dict[str, Any], config: RunnableConfig) -> Dict[str, Any]:
+def aggregate_decisions(state: GlobalState, config: RunnableConfig) -> GlobalState:
     """
     Aggregates results from all agents and provides comprehensive decision support using LLM.
     
     Args:
-        state: The current state with agent_results from the router
+        state: The GlobalState with agent_results from the router
         config: LangGraph configuration
         
     Returns:
-        Updated state with LLM-generated decision support information
+        Updated GlobalState with LLM-generated decision support information
     """
     logger = get_logger("aggregate_decisions")
     logger.info("[AggregateDecisions] Starting decision aggregation process")
     
-    # Extract agent results from the state
+    # Extract agent results from the GlobalState
     agent_results = state.get("agent_results", {})
     original_query = state.get("raw_query", "")
     
@@ -102,12 +102,14 @@ def aggregate_decisions(state: Dict[str, Any], config: RunnableConfig) -> Dict[s
     # If no agent results available, provide fallback
     if not agent_results_summary:
         logger.warning("[AggregateDecisions] No agent results available, providing fallback decision")
-        fallback_decision = DecisionState(
-            aggregated_data={},
-            final_advice="Insufficient data available to provide specific recommendations. Please provide more details about your agricultural needs.",
-            explanation="No specific agent data was available to analyze."
-        )
-        return {**state, "decision": fallback_decision}
+        fallback_decision = {
+            "aggregated_data": {},
+            "final_advice": "Insufficient data available to provide specific recommendations. Please provide more details about your agricultural needs.",
+            "explanation": "No specific agent data was available to analyze."
+        }
+        updated_state = GlobalState(**state)
+        updated_state["decision"] = fallback_decision
+        return updated_state
     
     try:
         # Initialize LLM
@@ -139,17 +141,20 @@ def aggregate_decisions(state: Dict[str, Any], config: RunnableConfig) -> Dict[s
             logger.info("[AggregateDecisions] Successfully parsed LLM decision response")
             
             # Create decision state from LLM response
-            decision = DecisionState(
-                aggregated_data=agent_results_summary,
-                final_advice=parsed_decision.get("final_advice", "No specific advice available"),
-                explanation=parsed_decision.get("explanation", "No explanation provided")
-            )
+            decision = {
+                "aggregated_data": agent_results_summary,
+                "final_advice": parsed_decision.get("final_advice", "No specific advice available"),
+                "explanation": parsed_decision.get("explanation", "No explanation provided")
+            }
             
             # Log the decision components
             logger.info(f"[AggregateDecisions] Final advice: {decision['final_advice'][:100]}...")
             logger.info(f"[AggregateDecisions] Confidence from LLM: {parsed_decision.get('confidence_score', 'Not provided')}")
             
-            return {**state, "decision": decision}
+            # Update GlobalState with decision
+            updated_state = GlobalState(**state)
+            updated_state["decision"] = decision
+            return updated_state
             
         except json.JSONDecodeError as e:
             logger.error(f"[AggregateDecisions] Failed to parse LLM JSON response: {e}")
@@ -162,7 +167,7 @@ def aggregate_decisions(state: Dict[str, Any], config: RunnableConfig) -> Dict[s
         logger.error(f"[AggregateDecisions] Error during LLM processing: {e}")
         return _generate_fallback_decision(agent_results_summary, original_query, logger, state)
 
-def _generate_fallback_decision(agent_results: Dict[str, Any], original_query: str, logger, state: Dict[str, Any]) -> Dict[str, Any]:
+def _generate_fallback_decision(agent_results: Dict[str, Any], original_query: str, logger, state: GlobalState) -> GlobalState:
     """
     Generate a fallback decision when LLM processing fails.
     
@@ -170,9 +175,10 @@ def _generate_fallback_decision(agent_results: Dict[str, Any], original_query: s
         agent_results: Results from various agents
         original_query: Original user query
         logger: Logger instance
+        state: Current GlobalState
         
     Returns:
-        Fallback decision state
+        Updated GlobalState with fallback decision
     """
     logger.info("[AggregateDecisions] Generating fallback decision using rule-based approach")
     
@@ -214,13 +220,15 @@ def _generate_fallback_decision(agent_results: Dict[str, Any], original_query: s
     explanation = "\n".join(explanation_points) if explanation_points else "Limited data available for comprehensive analysis."
     
     # Create decision state
-    decision = DecisionState(
-        aggregated_data=agent_results,
-        final_advice=final_advice,
-        explanation=explanation
-    )
+    decision = {
+        "aggregated_data": agent_results,
+        "final_advice": final_advice,
+        "explanation": explanation
+    }
     
     logger.info(f"[AggregateDecisions] Fallback decision generated: {final_advice[:100]}...")
     
-    # Return updated state with decision support
-    return {**state, "decision": decision}
+    # Update GlobalState with fallback decision
+    updated_state = GlobalState(**state)
+    updated_state["decision"] = decision
+    return updated_state

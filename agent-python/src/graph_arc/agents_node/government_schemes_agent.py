@@ -2,11 +2,12 @@
 Government Schemes Agent Node
 Simple schemes data collector - no LLM calls
 """
-from src.graph_arc.state import GlobalState, PolicyState
+from src.graph_arc.state import GlobalState
 from src.utils.loggers import get_logger
 from src.data.government_schemes_plugin import get_schemes_by_location_and_profile
+from typing import Dict, Any
 
-def government_schemes_agent(state: GlobalState) -> PolicyState:
+def government_schemes_agent(state: GlobalState) -> Dict[str, Any]:
     """
     Collect government schemes data - simple data gathering only.
     """
@@ -33,8 +34,8 @@ def government_schemes_agent(state: GlobalState) -> PolicyState:
         logger.error(f"[GovSchemesAgent] Failed to fetch schemes: {e}")
         relevant_schemes = []
     
-    return PolicyState(
-        relevant_schemes=relevant_schemes,
-        eligibility=None,        # No individual eligibility - handled by aggregate node
-        application_steps=None   # No individual steps - handled by aggregate node
-    )
+    return {
+        "relevant_schemes": relevant_schemes,
+        "eligibility": None,        # No individual eligibility - handled by aggregate node
+        "application_steps": None   # No individual steps - handled by aggregate node
+    }

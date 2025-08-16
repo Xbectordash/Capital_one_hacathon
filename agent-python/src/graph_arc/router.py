@@ -6,21 +6,20 @@ from src.graph_arc.agents_node.crop_health_pest_agent import crop_health_pest_ag
 from src.graph_arc.agents_node.government_schemes_agent import government_schemes_agent
 from src.graph_arc.core_nodes.offline_access_agent import offline_access_agent
 # Import state types
-from src.graph_arc.state import GlobalState, AgentResultsState
+from src.graph_arc.state import GlobalState
 from src.utils.loggers import get_logger
 from typing import Dict, Any, List, Union
 
-def conditional_router(state: Dict[str, Any]) -> Dict[str, Any]:
+def conditional_router(state: GlobalState) -> GlobalState:
     """
     Routes the query to appropriate agent nodes based on detected intents.
-    In LangGraph, this node processes the state and returns an updated state
-    with agent results added.
+    Takes GlobalState as input and updates it with agent results.
     
     Args:
-        state: The current state containing user query, intents, and entities
+        state: The GlobalState containing user query, intents, and entities
         
     Returns:
-        Updated state with agent results
+        Updated GlobalState with agent results
     """
     logger = get_logger("conditional_router")
     logger.info("[ConditionalRouter] Starting agent routing process")
@@ -32,7 +31,7 @@ def conditional_router(state: Dict[str, Any]) -> Dict[str, Any]:
     logger.info(f"[ConditionalRouter] Detected intents: {intents}")
     
     # Initialize empty results dictionary
-    results: AgentResultsState = {}
+    results: Dict[str, Any] = {}
     
     # Process each intent through the appropriate agent
     for intent in intents:
@@ -69,6 +68,8 @@ def conditional_router(state: Dict[str, Any]) -> Dict[str, Any]:
     logger.info(f"[ConditionalRouter] Agent routing completed. Processed {len(results)} agents")
     logger.info(f"[ConditionalRouter] Agent results keys: {list(results.keys())}")
     
-    # In LangGraph style, we return the entire state with updates
-    # We create a new dict to avoid mutating the input state
-    return {**state, "agent_results": results}
+    # Update GlobalState with agent results
+    updated_state = GlobalState(**state)
+    updated_state["agent_results"] = results
+    
+    return updated_state

@@ -1,5 +1,5 @@
 from langchain.tools import tool
-from plugins.price_from_mandi import AgmarknetAPIClient
+from src.data.price_from_mandi import AgmarknetAPIClient
 
 @tool("get_mandi_price", return_direct=True)
 def get_mandi_price(format_='json', commodity=None, state=None, district=None, market=None, variety=None, grade=None, limit=1, offset=0):

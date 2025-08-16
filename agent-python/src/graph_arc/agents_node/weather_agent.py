@@ -2,11 +2,12 @@
 Weather Agent Node
 Simple weather data collector - no LLM calls
 """
-from src.graph_arc.state import GlobalState, WeatherAgentState
+from src.graph_arc.state import GlobalState
 from src.utils.loggers import get_logger
 from src.data.weather_plugins import fetch_weather_data
+from typing import Dict, Any
 
-def weather_agent(state: GlobalState) -> WeatherAgentState:
+def weather_agent(state: GlobalState) -> Dict[str, Any]:
     """
     Collect weather data from API - simple data gathering only.
     """
@@ -30,8 +31,8 @@ def weather_agent(state: GlobalState) -> WeatherAgentState:
             "precipitation": "N/A"
         }
     
-    return WeatherAgentState(
-        date_range="today",
-        forecast=forecast,
-        recommendation=None  # No individual recommendations - handled by aggregate node
-    )
+    return {
+        "date_range": "today",
+        "forecast": forecast,
+        "recommendation": None  # No individual recommendations - handled by aggregate node
+    }

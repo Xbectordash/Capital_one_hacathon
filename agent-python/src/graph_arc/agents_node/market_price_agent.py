@@ -2,11 +2,12 @@
 Market Price Agent Node
 Simple market data collector - no LLM calls
 """
-from src.graph_arc.state import GlobalState, MarketState
+from src.graph_arc.state import GlobalState
 from src.utils.loggers import get_logger
 from src.tools.mandi_price_tool import get_mandi_price
+from typing import Dict, Any
 
-def market_price_agent(state: GlobalState) -> MarketState:
+def market_price_agent(state: GlobalState) -> Dict[str, Any]:
     """
     Collect market price data from mandi API - simple data gathering only.
     """
@@ -35,10 +36,10 @@ def market_price_agent(state: GlobalState) -> MarketState:
         logger.error(f"[MarketPriceAgent] Failed to fetch price: {e}")
         current_price = None
     
-    return MarketState(
-        commodity=commodity,
-        mandi_name=mandi_name or market,
-        current_price=current_price,
-        price_forecast=None,  # No individual forecasts - handled by aggregate node
-        selling_suggestion=None  # No individual suggestions - handled by aggregate node
-    )
+    return {
+        "commodity": commodity,
+        "mandi_name": mandi_name or market,
+        "current_price": current_price,
+        "price_forecast": None,  # No individual forecasts - handled by aggregate node
+        "selling_suggestion": None  # No individual suggestions - handled by aggregate node
+    }

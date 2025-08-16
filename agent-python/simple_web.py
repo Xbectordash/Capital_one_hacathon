@@ -20,7 +20,7 @@ sys.path.insert(0, str(src_path))
 try:
     from src.graph_arc.graph import workflow
     from src.data.soil_plugins import get_soil_data_from_csv, fetch_soil_data_by_location
-    from src.data.weather_plugins import get_weather_data
+    from src.data.weather_plugins import fetch_weather_data
     from src.utils.loggers import get_logger
 except ImportError as e:
     print(f"❌ Import Error: {e}")
@@ -531,7 +531,7 @@ def handle_weather():
         logger.info(f"Processing weather request for: {location}")
         
         # Get weather data
-        weather_data = get_weather_data(location)
+        weather_data = fetch_weather_data(location)
         
         return jsonify({
             'success': True,

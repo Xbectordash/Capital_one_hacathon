@@ -2,10 +2,11 @@
 Crop Health & Pest Agent Node
 Simple crop health data collector - no LLM calls
 """
-from src.graph_arc.state import GlobalState, CropHealthState
+from src.graph_arc.state import GlobalState
 from src.utils.loggers import get_logger
+from typing import Dict, Any
 
-def crop_health_pest_agent(state: GlobalState) -> CropHealthState:
+def crop_health_pest_agent(state: GlobalState) -> Dict[str, Any]:
     """
     Collect crop health information - simple data gathering only.
     """
@@ -26,9 +27,9 @@ def crop_health_pest_agent(state: GlobalState) -> CropHealthState:
     
     logger.info(f"[CropHealthAgent] Crop health data collected for {crop_type}")
     
-    return CropHealthState(
-        crop_type=crop_type,
-        symptoms=symptoms,
-        diagnosis=None,  # No individual diagnosis - handled by aggregate node
-        treatment=None   # No individual treatment - handled by aggregate node
-    )
+    return {
+        "crop_type": crop_type,
+        "symptoms": symptoms,
+        "diagnosis": None,  # No individual diagnosis - handled by aggregate node
+        "treatment": None   # No individual treatment - handled by aggregate node
+    }

@@ -2,11 +2,12 @@
 Soil & Crop Recommendation Agent Node
 Simple CSV soil data collector - no LLM calls
 """
-from src.graph_arc.state import GlobalState, SoilAgentState
+from src.graph_arc.state import GlobalState
 from src.utils.loggers import get_logger
 from src.data.soil_plugins import get_soil_data_from_csv
+from typing import Dict, Any
 
-def soil_crop_recommendation_agent(state: GlobalState) -> SoilAgentState:
+def soil_crop_recommendation_agent(state: GlobalState) -> Dict[str, Any]:
     """
     Collect soil data from CSV - simple data gathering only.
     """
@@ -29,9 +30,9 @@ def soil_crop_recommendation_agent(state: GlobalState) -> SoilAgentState:
         soil_type = "Unknown"
         recommended_crops = []
     
-    return SoilAgentState(
-        soil_type=soil_type,
-        soil_health=soil_health,
-        recommended_crops=recommended_crops,
-        ai_recommendation=None  # No individual recommendations - handled by aggregate node
-    )
+    return {
+        "soil_type": soil_type,
+        "soil_health": soil_health,
+        "recommended_crops": recommended_crops,
+        "ai_recommendation": None  # No individual recommendations - handled by aggregate node
+    }

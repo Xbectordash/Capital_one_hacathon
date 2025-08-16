@@ -31,46 +31,22 @@ def build_graph():
     graph.add_node("query_understanding", understand_query)
     graph.add_node("conditional_router", conditional_router)
     
-    # Adding agent nodes (data collectors)
-    graph.add_node("soil_crop_recommendation_agent", soil_crop_recommendation_agent)
-    graph.add_node("weather_agent", weather_agent)
-    graph.add_node("market_price_agent", market_price_agent)
-    graph.add_node("crop_health_pest_agent", crop_health_pest_agent)
-    graph.add_node("government_schemes_agent", government_schemes_agent)
-    
     # Adding decision and translation nodes
     graph.add_node("decision_support", aggregate_decisions)
     graph.add_node("translation_language", translation_language_agent)
     
-    # Core flow
+    # Core flow - router processes all agents internally
     graph.add_edge(START, "user_context")
     graph.add_edge("user_context", "query_understanding")
     graph.add_edge("query_understanding", "conditional_router")
     
-    # Router directs to relevant agents based on intent
-    graph.add_conditional_edges(
-        "conditional_router",
-        conditional_router,
-        {
-            "soil_crop_recommendation_agent": "soil_crop_recommendation_agent",
-            "weather_agent": "weather_agent", 
-            "market_price_agent": "market_price_agent",
-            "crop_health_pest_agent": "crop_health_pest_agent",
-            "government_schemes_agent": "government_schemes_agent"
-        }
-    )
-    
-    # All agents flow to decision support for aggregation
-    graph.add_edge("soil_crop_recommendation_agent", "decision_support")
-    graph.add_edge("weather_agent", "decision_support")
-    graph.add_edge("market_price_agent", "decision_support")
-    graph.add_edge("crop_health_pest_agent", "decision_support")
-    graph.add_edge("government_schemes_agent", "decision_support")
+    # Router processes all agents and flows directly to decision support
+    graph.add_edge("conditional_router", "decision_support")
     
     # After decision support, conditionally go to translation if needed
     graph.add_conditional_edges(
         "decision_support",
-        lambda state: ["translation_language"] if state.get("language", "en").lower() not in ["en", "english"] else ["END"],
+        lambda state: "translation_language" if state.get("language", "en").lower() not in ["en", "english"] else "END",
         {
             "translation_language": "translation_language",
             "END": END

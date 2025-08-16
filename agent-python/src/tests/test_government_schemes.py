@@ -10,7 +10,7 @@ from unittest.mock import patch, MagicMock
 # Add src to path for imports
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from plugins.government_schemes_plugin import (
+from src.data.government_schemes_plugin import (
     fetch_central_government_schemes,
     fetch_state_government_schemes,
     get_schemes_by_location_and_profile,

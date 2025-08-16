@@ -10,7 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.graph_arc.state import GlobalState
 from src.graph_arc.agents_node.government_schemes_agent import government_schemes_agent
-from plugins.government_schemes_plugin import get_schemes_by_location_and_profile
+from src.data.government_schemes_plugin import get_schemes_by_location_and_profile
 
 def test_government_schemes_flow():
     """Test the complete government schemes recommendation flow"""
