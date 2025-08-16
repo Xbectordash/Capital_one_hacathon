@@ -125,24 +125,86 @@ class SocketService {
                 const data = response.data
                 let formattedResponse = ''
                 
-                if (data.translated_response && language !== 'en') {
-                    formattedResponse = data.translated_response
-                    if (data.translated_explanation) {
-                        formattedResponse += `\n\n${getLabel('explanation', language)}: ${data.translated_explanation}`
+                // Check if we have comprehensive advice (new enhanced format)
+                if (data.comprehensive_advice) {
+                    console.log('📊 Using comprehensive advice format')
+                    const comprehensive = data.comprehensive_advice
+                    
+                    // Format comprehensive response with all sections
+                    formattedResponse = `🎯 ${comprehensive.final_advice || 'Agricultural advice'}\n\n`
+                    
+                    if (comprehensive.weather_analysis) {
+                        const weather = comprehensive.weather_analysis
+                        formattedResponse += `🌤️ WEATHER ANALYSIS:\n`
+                        formattedResponse += `Current: ${weather.current_conditions || 'N/A'}\n`
+                        formattedResponse += `Farming: ${weather.farming_suitability || 'N/A'}\n`
+                        formattedResponse += `Next 24h: ${weather.next_24h_guidance || 'N/A'}\n\n`
                     }
+                    
+                    if (comprehensive.soil_analysis) {
+                        const soil = comprehensive.soil_analysis
+                        formattedResponse += `🌱 SOIL ANALYSIS:\n`
+                        formattedResponse += `Nutrients: ${soil.nutrient_status || 'N/A'}\n`
+                        formattedResponse += `Health: ${soil.soil_health_score || 'N/A'}\n`
+                        if (soil.immediate_actions && soil.immediate_actions.length > 0) {
+                            formattedResponse += `Actions:\n`
+                            soil.immediate_actions.forEach(action => {
+                                formattedResponse += `  • ${action}\n`
+                            })
+                        }
+                        formattedResponse += '\n'
+                    }
+                    
+                    if (comprehensive.market_insights) {
+                        const market = comprehensive.market_insights
+                        formattedResponse += `💰 MARKET INSIGHTS:\n`
+                        formattedResponse += `Prices: ${market.current_prices || 'N/A'}\n`
+                        formattedResponse += `Trend: ${market.price_trend || 'N/A'}\n`
+                        formattedResponse += `Timing: ${market.selling_timing || 'N/A'}\n\n`
+                    }
+                    
+                    if (comprehensive.priority_actions && comprehensive.priority_actions.length > 0) {
+                        formattedResponse += `🔥 PRIORITY ACTIONS:\n`
+                        comprehensive.priority_actions.forEach(action => {
+                            formattedResponse += `  ${action}\n`
+                        })
+                        formattedResponse += '\n'
+                    }
+                    
+                    if (comprehensive.cost_benefit) {
+                        const cost = comprehensive.cost_benefit
+                        formattedResponse += `💵 COST-BENEFIT:\n`
+                        formattedResponse += `Cost: ${cost.estimated_cost || 'N/A'}\n`
+                        formattedResponse += `Return: ${cost.expected_return || 'N/A'}\n`
+                        formattedResponse += `Timeline: ${cost.roi_timeframe || 'N/A'}\n\n`
+                    }
+                    
+                    if (comprehensive.confidence_score) {
+                        formattedResponse += `📊 Confidence: ${(comprehensive.confidence_score * 100).toFixed(1)}%\n\n`
+                    }
+                    
                 } else {
-                    formattedResponse = data.final_advice || 'No advice available'
-                    if (data.explanation) {
-                        formattedResponse += '\n\nExplanation: ' + data.explanation
+                    // Fallback to simple format for backward compatibility
+                    console.log('📝 Using simple advice format')
+                    if (data.translated_response && language !== 'en') {
+                        formattedResponse = data.translated_response
+                        if (data.translated_explanation) {
+                            formattedResponse += `\n\n${getLabel('explanation', language)}: ${data.translated_explanation}`
+                        }
+                    } else {
+                        formattedResponse = data.final_advice || 'No advice available'
+                        if (data.explanation) {
+                            formattedResponse += '\n\nExplanation: ' + data.explanation
+                        }
                     }
                 }
                 
                 if (data.location && data.location !== 'Unknown') {
-                    formattedResponse += `\n\n📍 ${getLabel('location', language)}: ${data.location}`
+                    formattedResponse += `\n📍 ${getLabel('location', language)}: ${data.location}`
                 }
                 
                 if (data.detected_intents && data.detected_intents.length > 0) {
-                    formattedResponse += `\n\n🎯 ${getLabel('topic', language)}: ${data.detected_intents.join(', ')}`
+                    formattedResponse += `\n🎯 ${getLabel('topic', language)}: ${data.detected_intents.join(', ')}`
                 }
                 
                 socket.emit('ai_response', {
@@ -150,7 +212,8 @@ class SocketService {
                     success: true,
                     type: 'agricultural_advice',
                     language: language,
-                    timestamp: new Date().toISOString()
+                    timestamp: new Date().toISOString(),
+                    comprehensive: !!data.comprehensive_advice
                 })
             } else if (response.message) {
                 console.log(`📝 Sending general response for language: ${language}`)

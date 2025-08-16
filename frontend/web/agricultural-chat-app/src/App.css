@@ -123,6 +123,22 @@ h1 {
   border-top-left-radius: 5px;
 }
 
+.ai-comprehensive {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.4), rgba(76, 175, 80, 0.2));
+  margin-right: 10%;
+  border-top-left-radius: 5px;
+  border-left: 4px solid rgba(76, 175, 80, 0.8);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  white-space: pre-line;
+  max-width: 90%;
+}
+
+.ai-comprehensive .message-content {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .status-message {
   background: linear-gradient(135deg, rgba(255, 193, 7, 0.3), rgba(255, 193, 7, 0.1));
   margin-right: 20%;

@@ -1,5 +1,4 @@
 # Docker Compose file for Capital One Hackathon - Three-Tier Architecture
-version: '3.8'
 
 networks:
   farmmate-network:

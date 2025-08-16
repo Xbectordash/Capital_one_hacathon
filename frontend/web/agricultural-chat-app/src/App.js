@@ -45,11 +45,27 @@ function App() {
 
     newSocket.on('ai_response', (response) => {
       setIsProcessing(false);
-      addMessage(
-        t('aiAssistant'),
-        response.message || response.response || JSON.stringify(response),
-        'ai'
-      );
+      
+      // Enhanced response handling for comprehensive format
+      let displayMessage = response.message || response.response || JSON.stringify(response);
+      
+      // Check if it's a comprehensive response
+      if (response.comprehensive) {
+        console.log('📊 Received comprehensive agricultural response');
+        // The message is already formatted from the backend, display as-is
+        addMessage(
+          t('aiAssistant'),
+          displayMessage,
+          'ai-comprehensive'
+        );
+      } else {
+        // Regular response handling
+        addMessage(
+          t('aiAssistant'),
+          displayMessage,
+          'ai'
+        );
+      }
     });
 
     newSocket.on('ai_status', (statusData) => {

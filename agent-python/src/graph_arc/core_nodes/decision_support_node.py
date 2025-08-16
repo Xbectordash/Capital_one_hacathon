@@ -133,6 +133,9 @@ def aggregate_decisions(state: GlobalState, config: RunnableConfig) -> GlobalSta
         raw_content = response.content
         logger.info(f"[AggregateDecisions] Raw LLM response received: {len(raw_content)} characters")
         
+        # Debug: Log the actual raw response to see what we're getting
+        logger.info(f"[AggregateDecisions] Raw response content: {raw_content[:500]}...")
+        
         # Clean and parse LLM response
         cleaned_content = re.sub(r"```json|```", "", raw_content).strip()
         
@@ -140,15 +143,15 @@ def aggregate_decisions(state: GlobalState, config: RunnableConfig) -> GlobalSta
             parsed_decision = json.loads(cleaned_content)
             logger.info("[AggregateDecisions] Successfully parsed LLM decision response")
             
-            # Create decision state from LLM response
+            # Store the complete parsed JSON as the final_advice for comprehensive display
             decision = {
                 "aggregated_data": agent_results_summary,
-                "final_advice": parsed_decision.get("final_advice", "No specific advice available"),
-                "explanation": parsed_decision.get("explanation", "No explanation provided")
+                "final_advice": json.dumps(parsed_decision, indent=2),  # Store full JSON
+                "explanation": parsed_decision.get("detailed_explanation", "No explanation provided")
             }
             
             # Log the decision components
-            logger.info(f"[AggregateDecisions] Final advice: {decision['final_advice'][:100]}...")
+            logger.info(f"[AggregateDecisions] Full JSON response stored for comprehensive display")
             logger.info(f"[AggregateDecisions] Confidence from LLM: {parsed_decision.get('confidence_score', 'Not provided')}")
             
             # Update GlobalState with decision

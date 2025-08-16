@@ -165,15 +165,29 @@ async def process_agricultural_query(message: ChatMessage) -> Dict:
             "language": result.get('language', 'hi'),
             "detected_intents": result.get('intents', []),
             "agent_results": result.get('agent_results', {}),
+            "comprehensive_advice": None,
             "final_advice": None,
             "explanation": None,
             "translated_response": None
         }
         
-        # Extract final advice
+        # Extract final advice and check if it's comprehensive JSON
         if "decision" in result:
             decision = result["decision"]
-            processed_result["final_advice"] = decision.get('final_advice', 'No advice available')
+            final_advice = decision.get('final_advice', 'No advice available')
+            
+            # Try to parse final_advice as comprehensive JSON
+            try:
+                import json
+                if isinstance(final_advice, str) and final_advice.startswith('{'):
+                    comprehensive_json = json.loads(final_advice)
+                    processed_result["comprehensive_advice"] = comprehensive_json
+                    processed_result["final_advice"] = comprehensive_json.get("final_advice", "No advice available")
+                else:
+                    processed_result["final_advice"] = final_advice
+            except (json.JSONDecodeError, AttributeError):
+                processed_result["final_advice"] = final_advice
+            
             processed_result["explanation"] = decision.get('explanation', 'No explanation available')
         
         # Extract translation if available
@@ -339,6 +353,35 @@ async def chat_endpoint(message: ChatMessage):
             success=result["success"],
             error=result["error"]
         )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/chat/comprehensive")
+async def comprehensive_chat_endpoint(message: ChatMessage):
+    """HTTP endpoint that returns comprehensive agricultural advice in structured format"""
+    try:
+        start_time = datetime.now()
+        result = await process_agricultural_query(message)
+        processing_time = (datetime.now() - start_time).total_seconds()
+        
+        response_data = {
+            "message_id": str(uuid.uuid4()),
+            "user_id": message.user_id,
+            "query": message.raw_query,
+            "processing_time": processing_time,
+            "timestamp": datetime.now().isoformat(),
+            "success": result["success"]
+        }
+        
+        if result["success"]:
+            # Include comprehensive advice if available
+            if result["result"].get("comprehensive_advice"):
+                response_data["comprehensive_advice"] = result["result"]["comprehensive_advice"]
+            response_data["data"] = result["result"]
+        else:
+            response_data["error"] = result["error"]
+        
+        return response_data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

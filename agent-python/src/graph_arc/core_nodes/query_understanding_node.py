@@ -45,8 +45,8 @@ def clean_text(text):
     text = text.translate(str.maketrans('', '', string.punctuation))
     return ' '.join(text.split())
 
-def get_intents(query, threshold=0.3):
-    """Get intents using trained model"""
+def get_intents(query, threshold=0.2):
+    """Get intents using trained model with enhanced multi-intent detection"""
     if not load_intent_model():
         return [], 0.0
     
@@ -57,14 +57,37 @@ def get_intents(query, threshold=0.3):
     intents = []
     max_prob = 0.0
     
+    # Lower threshold for better multi-intent detection
     for i, class_name in enumerate(binarizer.classes_):
         prob = prediction_probs[i][0][1] if len(prediction_probs[i][0]) > 1 else prediction_probs[i][0][0]
         if prob > threshold:
             intents.append(class_name)
         max_prob = max(max_prob, prob)
     
+    # Enhanced rule-based intent detection for common combinations
+    query_lower = query.lower()
+    
+    # Fertilizer + Price queries should trigger both soil and market
+    fertilizer_keywords = ['fertilizer', 'fertiliser', 'manure', 'urea', 'phosphate', 'nutrient']
+    price_keywords = ['price', 'rate', 'cost', 'market', 'selling', 'buying']
+    
+    has_fertilizer = any(keyword in query_lower for keyword in fertilizer_keywords)
+    has_price = any(keyword in query_lower for keyword in price_keywords)
+    
+    if has_fertilizer and has_price:
+        # Add both soil and market intents if not already present
+        if 'soil' not in intents:
+            intents.append('soil')
+        if 'market' not in intents:
+            intents.append('market')
+        max_prob = max(max_prob, 0.8)  # High confidence for rule-based detection
+    elif has_fertilizer and 'soil' not in intents:
+        # Fertilizer queries should always include soil analysis
+        intents.append('soil')
+        max_prob = max(max_prob, 0.7)
+    
+    # If still no intents, get the highest probability intent
     if not intents and len(binarizer.classes_) > 0:
-        # Get highest probability intent
         best_idx = 0
         best_prob = 0
         for i, class_name in enumerate(binarizer.classes_):

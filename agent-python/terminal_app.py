@@ -309,29 +309,147 @@ class FarmMateTerminalApp:
             
             # Extract the response from the result
             if result.get("decision"):
-                response = result["decision"].get("final_advice", "No advice available")
+                # Try to parse the final_advice as JSON for comprehensive display
+                final_advice = result["decision"].get("final_advice", "No advice available")
                 explanation = result["decision"].get("explanation", "")
+                
+                try:
+                    import json
+                    # If final_advice is JSON string, parse and display comprehensively
+                    if final_advice.startswith('{'):
+                        parsed_response = json.loads(final_advice)
+                        self.display_comprehensive_response(parsed_response)
+                    else:
+                        # Display simple response
+                        self.display_simple_response(final_advice, explanation)
+                except (json.JSONDecodeError, AttributeError):
+                    # Display simple response if JSON parsing fails
+                    self.display_simple_response(final_advice, explanation)
             else:
-                response = "I couldn't process your query. Please try rephrasing it."
-                explanation = ""
-            
-            print("\n" + "="*60)
-            print("🤖 FARMMATE AI RESPONSE")
-            print("="*60)
-            print(response)
-            
-            if explanation:
-                print("\n" + "-"*40)
-                print("📋 DETAILED EXPLANATION:")
-                print("-"*40)
-                print(explanation)
-            
-            print("="*60)
-            
+                print("\n❌ I couldn't process your query. Please try rephrasing it.")
+                
         except Exception as e:
             self.logger.error(f"Query processing failed: {e}")
             print(f"❌ Sorry, I couldn't process that query: {e}")
             print("💡 Try rephrasing your question or use 'help' for guidance.")
+    
+    def display_comprehensive_response(self, response_data):
+        """Display comprehensive JSON response with all sections"""
+        print("\n" + "="*70)
+        print("🤖 FARMMATE AI - COMPREHENSIVE AGRICULTURAL ADVICE")
+        print("="*70)
+        
+        # Main advice
+        if response_data.get("final_advice"):
+            print(f"\n🎯 {response_data['final_advice']}")
+        
+        # Weather analysis
+        if response_data.get("weather_analysis"):
+            weather = response_data["weather_analysis"]
+            print(f"\n🌤️ WEATHER ANALYSIS:")
+            print("-"*40)
+            if weather.get("current_conditions"):
+                print(f"Current: {weather['current_conditions']}")
+            if weather.get("farming_suitability"):
+                print(f"Farming: {weather['farming_suitability']}")
+            if weather.get("next_24h_guidance"):
+                print(f"Next 24h: {weather['next_24h_guidance']}")
+        
+        # Soil analysis
+        if response_data.get("soil_analysis"):
+            soil = response_data["soil_analysis"]
+            print(f"\n🌱 SOIL ANALYSIS:")
+            print("-"*40)
+            if soil.get("nutrient_status"):
+                print(f"Nutrients: {soil['nutrient_status']}")
+            if soil.get("soil_health_score"):
+                print(f"Health: {soil['soil_health_score']}")
+            if soil.get("immediate_actions"):
+                print("Actions:")
+                for action in soil["immediate_actions"]:
+                    print(f"  • {action}")
+            if soil.get("crop_recommendations"):
+                print("Recommended crops:")
+                for crop in soil["crop_recommendations"]:
+                    print(f"  • {crop}")
+        
+        # Market insights
+        if response_data.get("market_insights"):
+            market = response_data["market_insights"]
+            print(f"\n💰 MARKET INSIGHTS:")
+            print("-"*40)
+            if market.get("current_prices"):
+                print(f"Prices: {market['current_prices']}")
+            if market.get("price_trend"):
+                print(f"Trend: {market['price_trend']}")
+            if market.get("selling_timing"):
+                print(f"Timing: {market['selling_timing']}")
+        
+        # Priority actions
+        if response_data.get("priority_actions"):
+            print(f"\n🔥 PRIORITY ACTIONS:")
+            print("-"*40)
+            for action in response_data["priority_actions"]:
+                print(f"  {action}")
+        
+        # Cost-benefit analysis
+        if response_data.get("cost_benefit"):
+            cost = response_data["cost_benefit"]
+            print(f"\n💵 COST-BENEFIT ANALYSIS:")
+            print("-"*40)
+            if cost.get("estimated_cost"):
+                print(f"Cost: {cost['estimated_cost']}")
+            if cost.get("expected_return"):
+                print(f"Return: {cost['expected_return']}")
+            if cost.get("roi_timeframe"):
+                print(f"Timeline: {cost['roi_timeframe']}")
+        
+        # Risk warnings
+        if response_data.get("risk_warnings"):
+            print(f"\n⚠️ RISK WARNINGS:")
+            print("-"*40)
+            for warning in response_data["risk_warnings"]:
+                print(f"  • {warning}")
+        
+        # Resources
+        if response_data.get("resources"):
+            resources = response_data["resources"]
+            print(f"\n📚 HELPFUL RESOURCES:")
+            print("-"*40)
+            if resources.get("fertilizers"):
+                print("Fertilizers:")
+                for fertilizer in resources["fertilizers"]:
+                    print(f"  • {fertilizer}")
+            if resources.get("government_schemes"):
+                print("Government schemes:")
+                for scheme in resources["government_schemes"]:
+                    print(f"  • {scheme}")
+            if resources.get("contact_info"):
+                print("Contact info:")
+                for contact in resources["contact_info"]:
+                    print(f"  • {contact}")
+        
+        # Confidence score
+        if response_data.get("confidence_score"):
+            confidence = response_data["confidence_score"]
+            print(f"\n📊 Confidence: {confidence:.1%}")
+        
+        print("="*70)
+        
+    def display_simple_response(self, response, explanation):
+        """Display simple text response"""
+        print("\n" + "="*60)
+        print("🤖 FARMMATE AI RESPONSE")
+        print("="*60)
+        print(response)
+        
+        if explanation:
+            print("\n" + "-"*40)
+            print("📋 DETAILED EXPLANATION:")
+            print("-"*40)
+            print(explanation)
+        
+        print("="*60)
             
     def run(self):
         """Main application loop"""
