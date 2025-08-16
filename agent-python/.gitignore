@@ -44,3 +44,9 @@ docker-compose.local.yml
 htmlcov/
 coverage.xml
 test-results/
+
+# Optimization files (moved to backup)
+src/graph_arc/llm_optimizer.py
+src/graph_arc/optimized_graph.py
+src/graph_arc/optimized_router.py
+src/data/soil_plugins_new.py

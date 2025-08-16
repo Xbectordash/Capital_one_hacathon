@@ -1,58 +1,44 @@
 """
 Market Price Agent Node
-Description: Provides market price information for commodities.
+Simple market data collector - no LLM calls
 """
 from src.graph_arc.state import GlobalState, MarketState
 from src.utils.loggers import get_logger
+from src.tools.mandi_price_tool import get_mandi_price
 
 def market_price_agent(state: GlobalState) -> MarketState:
     """
-    Process market price queries and return price information.
-    
-    Args:
-        state: The global state containing user query and entities
-        
-    Returns:
-        MarketState with price information and recommendations
+    Collect market price data from mandi API - simple data gathering only.
     """
     logger = get_logger("market_price_agent")
-    logger.info("[MarketPriceAgent] Starting market price analysis")
+    logger.info("[MarketPriceAgent] Collecting market price data")
     
-    # Extract relevant entities
-    commodity = state.get("entities", {}).get("commodity", "Unknown")
-    mandi_name = state.get("entities", {}).get("mandi", None)
+    # Extract entities for API call
+    entities = state.get("entities", {})
+    commodity = entities.get("commodity", "Unknown")
+    mandi_name = entities.get("mandi", None)
+    market = entities.get("market", None)
+    state_name = entities.get("state", None)
+    district = entities.get("district", None)
     
-    logger.info(f"[MarketPriceAgent] Analyzing price for commodity: {commodity}")
-    if mandi_name:
-        logger.info(f"[MarketPriceAgent] Target mandi: {mandi_name}")
-    else:
-        logger.info("[MarketPriceAgent] No specific mandi specified, using general pricing")
+    # Try to get price data from mandi API
+    try:
+        price_data = get_mandi_price(
+            commodity=commodity,
+            state=state_name,
+            district=district,
+            market=market or mandi_name
+        )
+        current_price = price_data.get("modal_price", 0.0)
+        logger.info(f"[MarketPriceAgent] Price data collected for {commodity}")
+    except Exception as e:
+        logger.error(f"[MarketPriceAgent] Failed to fetch price: {e}")
+        current_price = None
     
-    # Mock current price data (would come from API/database)
-    current_price = 2000.0  # in INR per quintal
-    logger.info(f"[MarketPriceAgent] Current price retrieved: ₹{current_price}/quintal")
-    
-    # Generate price forecast and selling suggestions
-    price_forecast = "Prices expected to rise by 5% in the next week due to festival season demand."
-    
-    if current_price > 1800:
-        selling_suggestion = "Consider selling now as prices are above average."
-        logger.info("[MarketPriceAgent] Price is above average - recommending immediate sale")
-    else:
-        selling_suggestion = "Consider holding for better prices if storage is available."
-        logger.info("[MarketPriceAgent] Price is below average - recommending to hold")
-    
-    logger.info(f"[MarketPriceAgent] Price forecast: {price_forecast}")
-    logger.info(f"[MarketPriceAgent] Selling suggestion: {selling_suggestion}")
-    
-    # Return properly typed state
-    result = MarketState(
+    return MarketState(
         commodity=commodity,
-        mandi_name=mandi_name,
+        mandi_name=mandi_name or market,
         current_price=current_price,
-        price_forecast=price_forecast,
-        selling_suggestion=selling_suggestion
+        price_forecast=None,  # No individual forecasts - handled by aggregate node
+        selling_suggestion=None  # No individual suggestions - handled by aggregate node
     )
-    
-    logger.info("[MarketPriceAgent] Market price analysis completed successfully")
-    return result
