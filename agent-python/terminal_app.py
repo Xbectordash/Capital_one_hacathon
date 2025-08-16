@@ -300,7 +300,8 @@ class FarmMateTerminalApp:
             initial_state = {
                 "user_id": "terminal_user",
                 "raw_query": query,
-                "language": "en"  # Default to English for terminal
+                "language": "en",  # Default to English for terminal
+                "location": self.session_data.get("default_location")  # Use user's profile location
             }
             
             # Use the workflow to process the query

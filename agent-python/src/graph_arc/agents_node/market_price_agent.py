@@ -24,14 +24,14 @@ def market_price_agent(state: GlobalState) -> Dict[str, Any]:
     
     # Try to get price data from mandi API
     try:
-        price_data = get_mandi_price(
-            commodity=commodity,
-            state=state_name,
-            district=district,
-            market=market or mandi_name
-        )
-        current_price = price_data.get("modal_price", 0.0)
-        logger.info(f"[MarketPriceAgent] Price data collected for {commodity}")
+        price_data = get_mandi_price.invoke({
+            "commodity": commodity,
+            "state": state_name,
+            "district": district,
+            "market": market or mandi_name
+        })
+        current_price = price_data if isinstance(price_data, (int, float)) else 0.0
+        logger.info(f"[MarketPriceAgent] Price data collected for {commodity}: ₹{current_price}")
     except Exception as e:
         logger.error(f"[MarketPriceAgent] Failed to fetch price: {e}")
         current_price = None

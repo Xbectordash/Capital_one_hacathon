@@ -2,10 +2,10 @@
 Offline Access Agent Node
 Description: Provides offline access to agricultural information.
 """
-from src.graph_arc.state import GlobalState, OfflineState
+from src.graph_arc.state import GlobalState
 from src.utils.loggers import get_logger
 
-def offline_access_agent(state: GlobalState) -> OfflineState:
+def offline_access_agent(state: GlobalState) -> dict:
     """
     Process offline access requests and format information for offline channels.
     
@@ -13,7 +13,7 @@ def offline_access_agent(state: GlobalState) -> OfflineState:
         state: The global state containing user query and entities
         
     Returns:
-        OfflineState with formatted information for offline access
+        dict with formatted information for offline access
     """
     logger = get_logger("offline_access_agent")
     logger.info("[OfflineAccessAgent] Starting offline access processing")
@@ -36,11 +36,11 @@ def offline_access_agent(state: GlobalState) -> OfflineState:
         message_format = "medium_text"
         logger.info("[OfflineAccessAgent] Configured for default SMS with medium text format")
     
-    # Return properly typed state
-    result = OfflineState(
-        channel_type=channel_type,
-        message_format=message_format
-    )
+    # Return as dict
+    result = {
+        "channel_type": channel_type,
+        "message_format": message_format
+    }
     
     logger.info(f"[OfflineAccessAgent] Offline access configuration: {result}")
     logger.info("[OfflineAccessAgent] Offline access processing completed successfully")

@@ -86,10 +86,46 @@ def understand_query(state: GlobalState, config=None) -> GlobalState:
     # Get intents using trained model
     intents, confidence = get_intents(query)
     
+    # Simple entity extraction
+    entities = extract_entities(query)
+    
     state["intents"] = intents
-    state["entities"] = {}  # No entity extraction for now
+    state["entities"] = entities
     state["confidence_score"] = confidence
     
     logger.info(f"Predicted intents: {intents}, confidence: {confidence}")
+    logger.info(f"Extracted entities: {entities}")
     
     return state
+
+def extract_entities(query: str) -> dict:
+    """Simple entity extraction for agricultural terms"""
+    query_lower = query.lower()
+    entities = {}
+    
+    # Common crops
+    crops = ['rice', 'wheat', 'cotton', 'sugarcane', 'maize', 'corn', 'soybean', 'potato', 'tomato', 'onion']
+    for crop in crops:
+        if crop in query_lower:
+            entities['commodity'] = crop.title()
+            entities['crop'] = crop.title()
+            break
+    
+    # Investment/savings amounts
+    import re
+    amount_pattern = r'(\d+)\s*lakh'
+    amount_match = re.search(amount_pattern, query_lower)
+    if amount_match:
+        entities['investment'] = f"{amount_match.group(1)} lakh"
+    
+    # Fertilizer keywords
+    fertilizer_keywords = ['fertilize', 'fertilizer', 'manure', 'urea', 'phosphate']
+    if any(keyword in query_lower for keyword in fertilizer_keywords):
+        entities['fertilizer_needed'] = True
+    
+    # Market/price keywords
+    price_keywords = ['price', 'rate', 'cost', 'market', 'selling']
+    if any(keyword in query_lower for keyword in price_keywords):
+        entities['price_inquiry'] = True
+    
+    return entities
