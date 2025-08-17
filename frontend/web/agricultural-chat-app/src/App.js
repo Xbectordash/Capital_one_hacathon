@@ -161,7 +161,12 @@ function App() {
                 <strong>{msg.sender}</strong>
                 {msg.timestamp && <span className="timestamp">{msg.timestamp}</span>}
               </div>
-              <div className="message-content">{msg.message}</div>
+              <div 
+                className="message-content"
+                style={{ whiteSpace: 'pre-line' }}
+              >
+                {msg.message}
+              </div>
             </div>
           ))}
         </div>

@@ -125,18 +125,23 @@ h1 {
 
 .ai-comprehensive {
   background: linear-gradient(135deg, rgba(76, 175, 80, 0.4), rgba(76, 175, 80, 0.2));
-  margin-right: 10%;
+  margin-right: 5%;
   border-top-left-radius: 5px;
   border-left: 4px solid rgba(76, 175, 80, 0.8);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.6;
+  line-height: 1.7;
   white-space: pre-line;
-  max-width: 90%;
+  max-width: 95%;
+  padding: 20px;
 }
 
 .ai-comprehensive .message-content {
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  white-space: pre-line;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .status-message {
@@ -164,6 +169,8 @@ h1 {
 .message-content {
   line-height: 1.5;
   word-wrap: break-word;
+  white-space: pre-line;
+  overflow-wrap: break-word;
 }
 
 .input-container {
