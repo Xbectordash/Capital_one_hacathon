@@ -18,6 +18,8 @@ class SocketService {
             ? ["http://localhost:3000", "http://localhost:3001"]
             : [
                 "https://farmmate-frontend.onrender.com",
+                "https://capital-one-hacathon.vercel.app",
+                "https://capital-one-hacathon-czxg85qmw.vercel.app",
                 "http://localhost:3000", // Keep for local testing
                 process.env.FRONTEND_URL // Allow dynamic frontend URL
             ].filter(Boolean) // Remove undefined values
