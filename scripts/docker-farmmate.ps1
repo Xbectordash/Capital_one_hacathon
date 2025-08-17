@@ -31,10 +31,10 @@ $colors = @{
 # ASCII Art Banner
 Write-Host "
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║                    🐳 FARMMATE DOCKER DEPLOYMENT 🐳                          ║
+║                    🐳 FARMMATE DOCKER DEPLOYMENT 🐳                         ║
 ║                     Three-Tier Architecture Deployment                       ║
 ║                                                                              ║
-║   Python AI Server (Port 8000)                                            ║
+║   Python AI Server (Port 8000)                                               ║
 ║  🚀 Express Backend (Port 5000)                                             ║
 ║  ⚛️  React Frontend (Port 3000)                                              ║
 ║  🗄️  ChromaDB (Port 8001)                                                    ║
