@@ -1,0 +1,143 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "farmmate-ai"
+version = "1.0.0"
+description = "FarmMate Agricultural AI Assistant - Python Backend"
+authors = [
+    {name = "FarmMate Team", email = "team@farmmate.ai"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+keywords = ["agriculture", "ai", "farming", "crop-recommendation", "weather"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
+
+dependencies = [
+    "fastapi>=0.116.1",
+    "uvicorn>=0.35.0",
+    "websockets>=15.0.1",
+    "langchain>=0.3.27",
+    "langchain-google-genai>=2.1.9",
+    "langchain-core>=0.3.72",
+    "langgraph>=0.6.4",
+    "requests>=2.32.4",
+    "python-dotenv>=1.1.1",
+    "python-multipart>=0.0.20",
+    "pydantic>=2.11.7",
+    "httpx>=0.28.1",
+    "beautifulsoup4>=4.13.4",
+    "PyYAML>=6.0.2",
+    "SQLAlchemy>=2.0.42",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4.1",
+    "pytest-asyncio>=0.23.0",
+    "black>=24.0.0",
+    "isort>=5.13.0",
+    "flake8>=7.0.0",
+    "mypy>=1.8.0",
+    "coverage>=7.4.0",
+]
+test = [
+    "pytest>=8.4.1",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.12.0",
+    "httpx>=0.28.1",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.24.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Xbectordash/Capital_one_hacathon"
+Documentation = "https://github.com/Xbectordash/Capital_one_hacathon/tree/agent-python/agent-python/docs"
+Repository = "https://github.com/Xbectordash/Capital_one_hacathon.git"
+Issues = "https://github.com/Xbectordash/Capital_one_hacathon/issues"
+
+[project.scripts]
+farmmate-ai = "src.start_server:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.setuptools.package-data]
+"src" = ["**/*.json", "**/*.yaml", "**/*.yml"]
+
+# Development tools configuration
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["src"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["src/tests"]
+pythonpath = ["."]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/venv/*",
+    "*/__pycache__/*"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+ignore_errors = true

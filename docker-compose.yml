@@ -1,45 +1,104 @@
-# Docker Compose file for Capital One Hackathon project
+# Docker Compose file for Capital One Hackathon - Three-Tier Architecture
 version: '3.8'
+
+networks:
+  farmmate-network:
+    driver: bridge
+
 services:
+  # Python AI Server (FastAPI + WebSocket)
   agent-python:
     build:
       context: ./agent-python
-    container_name: agent-python
+      dockerfile: Dockerfile
+    container_name: farmmate-ai-server
     ports:
       - "8000:8000"
     environment:
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONUNBUFFERED=1
+      - PORT=8000
+    env_file:
+      - ./agent-python/env/.env
+    networks:
+      - farmmate-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
+  # Express.js Gateway Server (Socket.IO + WebSocket Client)
   backend:
     build:
       context: ./backend
-    container_name: backend
+      dockerfile: Dockerfile
+    container_name: farmmate-express-gateway
     ports:
-      - "3000:3000"
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - PYTHON_SERVER_URL=ws://agent-python:8000
     depends_on:
       - agent-python
+    networks:
+      - farmmate-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
+  # React Frontend (Web Application)
+  frontend-web:
+    build:
+      context: ./frontend
+      dockerfile: dockerfile
+      target: web-production
+    container_name: farmmate-react-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_BACKEND_URL=http://localhost:5000
+      - REACT_APP_SOCKET_URL=http://localhost:5000
+    depends_on:
+      - backend
+    networks:
+      - farmmate-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ChromaDB Service (Optional - for vector storage)
   chromadb:
     build:
       context: ./chromaDB
-    container_name: chromadb
+      dockerfile: Dockerfile
+    container_name: farmmate-chromadb
     ports:
       - "8001:8000"
     environment:
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONUNBUFFERED=1
+    networks:
+      - farmmate-network
     restart: unless-stopped
 
-  frontend-android:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile # Make sure the case matches: D vs d
-    container_name: frontend-android
-    volumes:
-      - ./frontend/android-app/farmmate/build/app/outputs/flutter-apk:/apk-output
-    working_dir: /app/farmmate
-    command: [ "/bin/sh", "-c", "ls /apk-output && tail -f /dev/null" ]
-    restart: on-failure
+  # Flutter Mobile App (COMMENTED OUT FOR NOW)
+  # frontend-android:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: dockerfile
+  #     target: flutter-app
+  #   container_name: farmmate-flutter-app
+  #   volumes:
+  #     - ./frontend/android-app/farmmate/build/app/outputs/flutter-apk:/apk-output
+  #   working_dir: /app/farmmate
+  #   command: [ "/bin/sh", "-c", "ls /apk-output && tail -f /dev/null" ]
+  #   restart: on-failure

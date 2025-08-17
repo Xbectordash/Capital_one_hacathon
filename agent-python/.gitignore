@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.env
+
+venv/
+.venv/
+env.bak/
+venv.bak/
+
+# VS Code
+.vscode/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Docker
+*.db
+docker-compose.override.yml
+docker-compose.local.yml
+
+# Secrets
+*.env
+!env/sample.env
+
+# Test
+*.coverage
+.pytest_cache/
+htmlcov/
+coverage.xml
+test-results/
+
+# Optimization files (moved to backup)
+src/graph_arc/llm_optimizer.py
+src/graph_arc/optimized_graph.py
+src/graph_arc/optimized_router.py
+src/data/soil_plugins_new.py

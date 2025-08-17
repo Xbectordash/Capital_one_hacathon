@@ -1,0 +1,140 @@
+# FarmMate CI/CD Pipeline Configuration (TOML)
+# This would be converted to YAML for actual GitHub Actions
+
+[workflow]
+name = "FarmMate CI/CD Pipeline"
+description = "Continuous Integration and Deployment for FarmMate Agricultural AI"
+
+[workflow.triggers]
+push = { branches = ["main", "agent-python", "development"] }
+pull_request = { branches = ["main", "agent-python"] }
+schedule = [{ cron = "0 2 * * 0" }]  # Weekly on Sunday 2 AM
+
+[jobs]
+
+# Linting and Code Quality
+[jobs.lint]
+name = "Code Quality & Linting"
+runs_on = "ubuntu-latest"
+timeout = 10
+
+[jobs.lint.steps]
+checkout = { uses = "actions/checkout@v4" }
+setup_node = { uses = "actions/setup-node@v4", with = { node_version = "20" } }
+setup_python = { uses = "actions/setup-python@v4", with = { python_version = "3.11" } }
+lint_python = { run = "cd agent-python && pip install -e .[dev] && make lint-python" }
+lint_node = { run = "cd backend && npm install && make lint-node" }
+lint_react = { run = "cd frontend/web/agricultural-chat-app && npm install && make lint" }
+
+# Testing
+[jobs.test]
+name = "Run Tests"
+runs_on = "ubuntu-latest"
+timeout = 15
+needs = ["lint"]
+
+[jobs.test.services]
+[jobs.test.services.chromadb]
+image = "chromadb/chroma:latest"
+ports = ["8001:8000"]
+
+[jobs.test.steps]
+checkout = { uses = "actions/checkout@v4" }
+setup_node = { uses = "actions/setup-node@v4", with = { node_version = "20" } }
+setup_python = { uses = "actions/setup-python@v4", with = { python_version = "3.11" } }
+install_deps = { run = "make install" }
+test_python = { run = "cd agent-python && make test-python" }
+test_node = { run = "cd backend && make test-node" }
+test_react = { run = "cd frontend/web/agricultural-chat-app && make test" }
+upload_coverage = { uses = "codecov/codecov-action@v3" }
+
+# Security Scanning
+[jobs.security]
+name = "Security Scan"
+runs_on = "ubuntu-latest"
+timeout = 10
+
+[jobs.security.steps]
+checkout = { uses = "actions/checkout@v4" }
+setup_node = { uses = "actions/setup-node@v4", with = { node_version = "20" } }
+setup_python = { uses = "actions/setup-python@v4", with = { python_version = "3.11" } }
+security_scan = { run = "make security" }
+dependency_check = { run = "make check-deps" }
+
+# Docker Build & Test
+[jobs.docker_build]
+name = "Docker Build & Integration Test"
+runs_on = "ubuntu-latest"
+timeout = 20
+needs = ["test", "security"]
+
+[jobs.docker_build.steps]
+checkout = { uses = "actions/checkout@v4" }
+setup_docker = { uses = "docker/setup-buildx-action@v3" }
+build_images = { run = "make docker-build" }
+start_services = { run = "make docker-up" }
+wait_for_services = { run = "sleep 30" }
+integration_test = { run = "make test-integration" }
+health_check = { run = "make health" }
+cleanup = { run = "make docker-down" }
+
+# Flutter Mobile Build
+[jobs.flutter_build]
+name = "Flutter Mobile App Build"
+runs_on = "ubuntu-latest"
+timeout = 15
+
+[jobs.flutter_build.steps]
+checkout = { uses = "actions/checkout@v4" }
+setup_flutter = { uses = "subosito/flutter-action@v2", with = { flutter_version = "3.16.0" } }
+flutter_deps = { run = "cd frontend/android-app/farmmate && flutter pub get" }
+flutter_test = { run = "cd frontend/android-app/farmmate && flutter test" }
+flutter_build = { run = "cd frontend/android-app/farmmate && flutter build apk --debug" }
+
+# Documentation
+[jobs.docs]
+name = "Build Documentation"
+runs_on = "ubuntu-latest"
+timeout = 10
+
+[jobs.docs.steps]
+checkout = { uses = "actions/checkout@v4" }
+setup_python = { uses = "actions/setup-python@v4", with = { python_version = "3.11" } }
+build_docs = { run = "make docs" }
+deploy_docs = { uses = "peaceiris/actions-gh-pages@v3", with = { github_token = "${{ secrets.GITHUB_TOKEN }}", publish_dir = "./docs" } }
+
+# Deployment to Staging
+[jobs.deploy_staging]
+name = "Deploy to Staging"
+runs_on = "ubuntu-latest"
+timeout = 15
+needs = ["docker_build", "flutter_build"]
+environment = "staging"
+if = "github.ref == 'refs/heads/development'"
+
+[jobs.deploy_staging.steps]
+checkout = { uses = "actions/checkout@v4" }
+deploy = { run = "make deploy-staging" }
+health_check = { run = "curl -f https://staging.farmmate.ai/health" }
+
+# Deployment to Production
+[jobs.deploy_production]
+name = "Deploy to Production"
+runs_on = "ubuntu-latest"
+timeout = 20
+needs = ["docker_build", "flutter_build"]
+environment = "production"
+if = "github.ref == 'refs/heads/main'"
+
+[jobs.deploy_production.steps]
+checkout = { uses = "actions/checkout@v4" }
+deploy = { run = "make deploy-production" }
+health_check = { run = "curl -f https://farmmate.ai/health" }
+notify_slack = { run = "echo 'Deployment successful!' | curl -X POST -H 'Content-type: application/json' --data @- ${{ secrets.SLACK_WEBHOOK }}" }
+
+# Environment Variables
+[env]
+NODE_ENV = "test"
+PYTHONPATH = "./agent-python/src"
+GEMINI_API_KEY = "${{ secrets.GEMINI_API_KEY }}"
+OPENWEATHER_API_KEY = "${{ secrets.OPENWEATHER_API_KEY }}"

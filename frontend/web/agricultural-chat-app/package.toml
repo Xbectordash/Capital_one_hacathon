@@ -1,0 +1,75 @@
+# FarmMate React Frontend - TOML Configuration
+# Alternative to package.json for better readability
+
+[package]
+name = "farmmate-agricultural-chat-app"
+version = "1.0.0"
+description = "FarmMate Agricultural AI - React Frontend with Socket.IO"
+private = true
+homepage = "http://localhost:3000"
+
+[package.author]
+name = "FarmMate Team"
+email = "team@farmmate.ai"
+
+[package.repository]
+type = "git"
+url = "https://github.com/Xbectordash/Capital_one_hacathon.git"
+directory = "frontend/web/agricultural-chat-app"
+
+[package.keywords]
+values = ["react", "agriculture", "chat", "ai", "farming", "socket.io", "frontend"]
+
+[scripts]
+start = "react-scripts start"
+build = "react-scripts build"
+test = "react-scripts test"
+eject = "react-scripts eject"
+analyze = "npm run build && npx webpack-bundle-analyzer build/static/js/*.js"
+lint = "eslint src/**/*.{js,jsx}"
+format = "prettier --write src/**/*.{js,jsx,css}"
+"test:coverage" = "react-scripts test --coverage --no-cache --watchAll=false"
+
+[dependencies]
+react = "^19.1.1"
+"react-dom" = "^19.1.1"
+"react-scripts" = "5.0.1"
+"socket.io-client" = "^4.8.1"
+"web-vitals" = "^2.1.4"
+axios = "^1.6.0"
+"react-router-dom" = "^6.20.0"
+"@mui/material" = "^5.15.0"
+"@emotion/react" = "^11.11.0"
+"@emotion/styled" = "^11.11.0"
+
+[devDependencies]
+"@testing-library/jest-dom" = "^6.6.4"
+"@testing-library/react" = "^16.3.0"
+"@testing-library/user-event" = "^13.5.0"
+"@testing-library/dom" = "^10.4.1"
+eslint = "^8.57.0"
+prettier = "^3.2.0"
+"webpack-bundle-analyzer" = "^4.10.0"
+
+[engines]
+node = ">=18.0.0"
+npm = ">=9.0.0"
+
+[config]
+backend_url = "http://localhost:5000"
+socket_url = "http://localhost:5000"
+
+[config.environment]
+development = { REACT_APP_BACKEND_URL = "http://localhost:5000", REACT_APP_SOCKET_URL = "http://localhost:5000" }
+production = { REACT_APP_BACKEND_URL = "https://api.farmmate.ai", REACT_APP_SOCKET_URL = "https://api.farmmate.ai" }
+test = { REACT_APP_BACKEND_URL = "http://localhost:5000", REACT_APP_SOCKET_URL = "http://localhost:5000" }
+
+[eslintConfig]
+extends = ["react-app", "react-app/jest"]
+
+[browserslist]
+production = [">0.2%", "not dead", "not op_mini all"]
+development = ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+
+[proxy]
+url = "http://localhost:5000"
