@@ -11,6 +11,7 @@ project_root = Path(__file__).resolve().parent.parent.parent
 env_paths = [
     project_root / ".env",           # Root level (preferred for deployment)
     project_root / "env" / ".env",   # Subfolder (legacy)
+    Path("/app/.env"),               # Docker/Render deployment path
 ]
 
 # Load environment variables from the first available .env file
@@ -40,6 +41,9 @@ NODE_ENV = os.getenv("NODE_ENV", "development")
 PORT = int(os.getenv("PORT", 8000))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
+# Detect production environment
+IS_PRODUCTION = NODE_ENV == "production" or os.getenv("RENDER") == "true"
+
 def get_config():
     """
     Returns configuration settings as a dictionary.
@@ -55,6 +59,7 @@ def get_config():
         "NODE_ENV": NODE_ENV,
         "PORT": PORT,
         "LOG_LEVEL": LOG_LEVEL,
+        "IS_PRODUCTION": IS_PRODUCTION,
         "PROJECT_ROOT": str(project_root),
     }
 

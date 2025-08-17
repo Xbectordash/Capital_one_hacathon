@@ -335,6 +335,295 @@ async def get_stats():
         "timestamp": datetime.now().isoformat()
     }
 
+@app.get("/test-page", response_class=HTMLResponse)
+async def test_page():
+    """Simple test page for WebSocket testing"""
+    html_content = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>🌾 FarmMate AI Test Page</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                min-height: 100vh;
+            }
+            .container {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 30px;
+                border-radius: 15px;
+                backdrop-filter: blur(10px);
+                box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            }
+            h1 {
+                text-align: center;
+                color: #fff;
+                margin-bottom: 30px;
+                font-size: 2.5em;
+            }
+            .chat-container {
+                background: rgba(255, 255, 255, 0.9);
+                color: #333;
+                padding: 20px;
+                border-radius: 10px;
+                margin: 20px 0;
+                max-height: 400px;
+                overflow-y: auto;
+            }
+            .input-group {
+                display: flex;
+                gap: 10px;
+                margin: 20px 0;
+            }
+            input[type="text"] {
+                flex: 1;
+                padding: 12px;
+                border: none;
+                border-radius: 8px;
+                font-size: 16px;
+                background: rgba(255, 255, 255, 0.9);
+            }
+            button {
+                padding: 12px 24px;
+                background: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 16px;
+                transition: background 0.3s;
+            }
+            button:hover {
+                background: #45a049;
+            }
+            button:disabled {
+                background: #cccccc;
+                cursor: not-allowed;
+            }
+            .status {
+                padding: 10px;
+                margin: 10px 0;
+                border-radius: 5px;
+                font-weight: bold;
+            }
+            .status.connected {
+                background: #d4edda;
+                color: #155724;
+                border: 1px solid #c3e6cb;
+            }
+            .status.disconnected {
+                background: #f8d7da;
+                color: #721c24;
+                border: 1px solid #f5c6cb;
+            }
+            .message {
+                margin: 10px 0;
+                padding: 10px;
+                border-radius: 8px;
+            }
+            .message.user {
+                background: #e3f2fd;
+                text-align: right;
+            }
+            .message.bot {
+                background: #f1f8e9;
+            }
+            .api-info {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 20px;
+                border-radius: 10px;
+                margin: 20px 0;
+            }
+            .api-info h3 {
+                margin-top: 0;
+            }
+            .api-endpoint {
+                background: rgba(0, 0, 0, 0.2);
+                padding: 10px;
+                border-radius: 5px;
+                font-family: monospace;
+                margin: 5px 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🌾 FarmMate AI Assistant</h1>
+            
+            <div class="api-info">
+                <h3>📡 API Information</h3>
+                <div class="api-endpoint">WebSocket: ws://localhost:8000/ws/{user_id}</div>
+                <div class="api-endpoint">Health: /health</div>
+                <div class="api-endpoint">API Docs: /docs</div>
+                <div class="api-endpoint">Chat HTTP: POST /chat</div>
+            </div>
+
+            <div id="status" class="status disconnected">❌ Disconnected</div>
+            
+            <div class="input-group">
+                <input type="text" id="userIdInput" placeholder="Enter User ID (e.g., farmer123)" value="test-user-123">
+                <button onclick="connect()" id="connectBtn">Connect</button>
+                <button onclick="disconnect()" id="disconnectBtn" disabled>Disconnect</button>
+            </div>
+
+            <div class="chat-container" id="chatContainer">
+                <div class="message bot">Welcome! Connect to start chatting with FarmMate AI.</div>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="messageInput" placeholder="अपना सवाल यहाँ लिखें... (Type your farming question here)" disabled>
+                <button onclick="sendMessage()" id="sendBtn" disabled>Send</button>
+            </div>
+
+            <div class="api-info">
+                <h3>🧪 Sample Questions (Hindi)</h3>
+                <button onclick="sendSample('मेरी गेहूं की फसल में कीड़े लग गए हैं, क्या करूं?')" class="sample-btn">Pest Problem</button>
+                <button onclick="sendSample('बारिश के मौसम में कौन सी फसल उगाऊं?')" class="sample-btn">Crop Suggestion</button>
+                <button onclick="sendSample('मिट्टी की जांच कैसे करूं?')" class="sample-btn">Soil Testing</button>
+            </div>
+        </div>
+
+        <script>
+            let ws = null;
+            let userId = null;
+
+            function updateStatus(message, isConnected) {
+                const status = document.getElementById('status');
+                status.textContent = message;
+                status.className = 'status ' + (isConnected ? 'connected' : 'disconnected');
+            }
+
+            function addMessage(content, isUser = false) {
+                const chatContainer = document.getElementById('chatContainer');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message ' + (isUser ? 'user' : 'bot');
+                messageDiv.innerHTML = content;
+                chatContainer.appendChild(messageDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+
+            function connect() {
+                userId = document.getElementById('userIdInput').value.trim();
+                if (!userId) {
+                    alert('Please enter a User ID');
+                    return;
+                }
+
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}/ws/${userId}`;
+                
+                ws = new WebSocket(wsUrl);
+                
+                ws.onopen = function(event) {
+                    updateStatus('✅ Connected to FarmMate AI', true);
+                    document.getElementById('connectBtn').disabled = true;
+                    document.getElementById('disconnectBtn').disabled = false;
+                    document.getElementById('messageInput').disabled = false;
+                    document.getElementById('sendBtn').disabled = false;
+                    addMessage('Connected successfully! You can now ask farming questions.');
+                };
+
+                ws.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    let messageContent = '';
+                    
+                    if (data.type === 'connection_established') {
+                        messageContent = `🎉 ${data.message}`;
+                    } else if (data.type === 'agricultural_response') {
+                        if (data.success && data.data) {
+                            messageContent = `
+                                <strong>🌾 Agricultural Advice:</strong><br>
+                                <strong>Query:</strong> ${data.data.query || 'N/A'}<br>
+                                <strong>Language:</strong> ${data.data.language || 'N/A'}<br>
+                                <strong>Detected Intents:</strong> ${(data.data.detected_intents || []).join(', ') || 'N/A'}<br>
+                                <strong>Final Advice:</strong> ${data.data.final_advice || 'N/A'}<br>
+                                <strong>Processing Time:</strong> ${data.processing_time?.toFixed(2)}s
+                            `;
+                        } else {
+                            messageContent = `❌ Error: ${data.error || 'Unknown error'}`;
+                        }
+                    } else if (data.type === 'status_update') {
+                        messageContent = `⏳ Status: ${data.status} - ${data.details?.stage || ''}`;
+                    } else {
+                        messageContent = data.message || JSON.stringify(data);
+                    }
+                    
+                    addMessage(messageContent);
+                };
+
+                ws.onclose = function(event) {
+                    updateStatus('❌ Disconnected', false);
+                    document.getElementById('connectBtn').disabled = false;
+                    document.getElementById('disconnectBtn').disabled = true;
+                    document.getElementById('messageInput').disabled = true;
+                    document.getElementById('sendBtn').disabled = true;
+                    addMessage('Connection closed.');
+                };
+
+                ws.onerror = function(error) {
+                    updateStatus('❌ Connection Error', false);
+                    addMessage('WebSocket error: ' + error);
+                };
+            }
+
+            function disconnect() {
+                if (ws) {
+                    ws.close();
+                }
+            }
+
+            function sendMessage() {
+                const messageInput = document.getElementById('messageInput');
+                const message = messageInput.value.trim();
+                
+                if (!message || !ws || ws.readyState !== WebSocket.OPEN) {
+                    return;
+                }
+
+                const messageData = {
+                    raw_query: message,
+                    language: "hi",
+                    location: "India"
+                };
+
+                ws.send(JSON.stringify(messageData));
+                addMessage(`🧑‍🌾 You: ${message}`, true);
+                messageInput.value = '';
+            }
+
+            function sendSample(question) {
+                if (!ws || ws.readyState !== WebSocket.OPEN) {
+                    alert('Please connect first!');
+                    return;
+                }
+                document.getElementById('messageInput').value = question;
+                sendMessage();
+            }
+
+            // Enter key to send message
+            document.getElementById('messageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+
+            // Auto-connect on page load for testing
+            window.addEventListener('load', function() {
+                setTimeout(connect, 1000);
+            });
+        </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
+
 @app.post("/chat")
 async def chat_endpoint(message: ChatMessage):
     """HTTP endpoint for testing (non-WebSocket)"""

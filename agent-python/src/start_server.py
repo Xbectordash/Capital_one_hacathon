@@ -24,12 +24,13 @@ if __name__ == "__main__":
     setup_logging()
     
     import uvicorn
+    from src.config.settings import IS_PRODUCTION, PORT
     
-    # Get port from environment variable (for deployment) or default to 8000
-    port = int(os.environ.get("PORT", 8000))
+    # Get port from settings (respects environment variables)
+    port = PORT
     
     # Check if we're in production
-    is_production = os.environ.get("NODE_ENV") == "production"
+    is_production = IS_PRODUCTION
     reload_mode = not is_production
     
     # Start the FastAPI server
