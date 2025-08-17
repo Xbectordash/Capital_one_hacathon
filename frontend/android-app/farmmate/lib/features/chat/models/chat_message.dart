@@ -1,6 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 
-enum MessageSender { user, bot }
+enum MessageSender { user, bot, system }
 
 class ChatMessage {
   final String text;
