@@ -245,7 +245,10 @@ class SocketService {
     async connectToPythonServer(userId, socket, language) {
         try {
             console.log(`🔗 Attempting to connect to Python AI server for user: ${userId} with language: ${language}`)
-            const ws = new WebSocket(`${this.PYTHON_SERVER_URL}/ws/${userId}`)
+            
+            // Convert HTTPS URL to WSS for WebSocket connection
+            const wsUrl = this.PYTHON_SERVER_URL.replace('https://', 'wss://').replace('http://', 'ws://')
+            const ws = new WebSocket(`${wsUrl}/ws/${userId}`)
             
             return new Promise((resolve, reject) => {
                 const timeout = setTimeout(() => {
