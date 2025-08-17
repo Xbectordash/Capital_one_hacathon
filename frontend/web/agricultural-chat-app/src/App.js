@@ -7,6 +7,13 @@ import './App.css';
 // Use environment variables for production deployment
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000';
 
+// Debug logging
+console.log('🔍 Debug Info:');
+console.log('REACT_APP_BACKEND_URL:', process.env.REACT_APP_BACKEND_URL);
+console.log('REACT_APP_SOCKET_URL:', process.env.REACT_APP_SOCKET_URL);
+console.log('Final BACKEND_URL:', BACKEND_URL);
+console.log('NODE_ENV:', process.env.NODE_ENV);
+
 function App() {
   const { currentLanguage, changeLanguage, t, isRTL } = useLanguage();
   const [socket, setSocket] = useState(null);
