@@ -4,7 +4,8 @@ import { useLanguage } from './contexts/LanguageContext';
 import LanguageSelector from './components/LanguageSelector';
 import './App.css';
 
-const BACKEND_URL = 'http://localhost:5000';
+// Use environment variables for production deployment
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000';
 
 function App() {
   const { currentLanguage, changeLanguage, t, isRTL } = useLanguage();
