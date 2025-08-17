@@ -314,9 +314,173 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
 
 # HTTP endpoints for testing and monitoring
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 async def root():
-    return {"message": "Agricultural AI Assistant Server", "status": "running"}
+    """Main landing page with navigation to all features"""
+    html_content = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>🌾 FarmMate AI - Agricultural Intelligence Platform</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                margin: 0;
+                padding: 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .main-container {
+                text-align: center;
+                max-width: 800px;
+                padding: 50px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 20px;
+                backdrop-filter: blur(10px);
+                box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            }
+            h1 {
+                font-size: 4em;
+                margin-bottom: 20px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            }
+            .subtitle {
+                font-size: 1.5em;
+                margin-bottom: 40px;
+                opacity: 0.9;
+            }
+            .nav-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                margin: 40px 0;
+            }
+            .nav-card {
+                background: rgba(255, 255, 255, 0.2);
+                padding: 30px;
+                border-radius: 15px;
+                text-decoration: none;
+                color: white;
+                transition: all 0.3s ease;
+                border: 2px solid transparent;
+            }
+            .nav-card:hover {
+                background: rgba(255, 255, 255, 0.3);
+                transform: translateY(-5px);
+                border-color: rgba(255, 255, 255, 0.5);
+            }
+            .nav-icon {
+                font-size: 3em;
+                display: block;
+                margin-bottom: 15px;
+            }
+            .nav-title {
+                font-size: 1.3em;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+            .nav-desc {
+                font-size: 0.9em;
+                opacity: 0.8;
+            }
+            .status-bar {
+                background: rgba(0, 0, 0, 0.2);
+                padding: 20px;
+                border-radius: 10px;
+                margin-top: 30px;
+            }
+            .status-item {
+                display: inline-block;
+                margin: 0 20px;
+            }
+            .status-indicator {
+                width: 12px;
+                height: 12px;
+                background: #4CAF50;
+                border-radius: 50%;
+                display: inline-block;
+                margin-right: 8px;
+                animation: pulse 2s infinite;
+            }
+            @keyframes pulse {
+                0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+                70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="main-container">
+            <h1>🌾 FarmMate AI</h1>
+            <p class="subtitle">Intelligent Agricultural Assistant Platform</p>
+            
+            <div class="nav-grid">
+                <a href="/demo" class="nav-card">
+                    <span class="nav-icon">🎯</span>
+                    <div class="nav-title">Demo Showcase</div>
+                    <div class="nav-desc">Explore FarmMate capabilities and see example conversations</div>
+                </a>
+                
+                <a href="/test-page" class="nav-card">
+                    <span class="nav-icon">🧪</span>
+                    <div class="nav-title">Live WebSocket Test</div>
+                    <div class="nav-desc">Real-time chat interface for testing AI responses</div>
+                </a>
+                
+                <a href="/api-test" class="nav-card">
+                    <span class="nav-icon">🔬</span>
+                    <div class="nav-title">API Testing Suite</div>
+                    <div class="nav-desc">Test HTTP endpoints and API functionality</div>
+                </a>
+                
+                <a href="/docs" class="nav-card">
+                    <span class="nav-icon">📚</span>
+                    <div class="nav-title">API Documentation</div>
+                    <div class="nav-desc">Complete API reference and integration guide</div>
+                </a>
+                
+                <a href="/health" class="nav-card">
+                    <span class="nav-icon">💚</span>
+                    <div class="nav-title">Health Status</div>
+                    <div class="nav-desc">Server health and connection statistics</div>
+                </a>
+                
+                <a href="/stats" class="nav-card">
+                    <span class="nav-icon">📊</span>
+                    <div class="nav-title">Server Statistics</div>
+                    <div class="nav-desc">Real-time server metrics and usage data</div>
+                </a>
+            </div>
+            
+            <div class="status-bar">
+                <div class="status-item">
+                    <span class="status-indicator"></span>
+                    Server Status: Online
+                </div>
+                <div class="status-item">
+                    <span class="status-indicator"></span>
+                    AI Models: Ready
+                </div>
+                <div class="status-item">
+                    <span class="status-indicator"></span>
+                    WebSocket: Available
+                </div>
+            </div>
+            
+            <p style="margin-top: 30px; opacity: 0.7;">
+                Built for Capital One Hackathon 2025 • Empowering Farmers with AI
+            </p>
+        </div>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
 
 @app.get("/health")
 async def health_check():
@@ -619,6 +783,652 @@ async def test_page():
                 setTimeout(connect, 1000);
             });
         </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
+
+@app.get("/api-test", response_class=HTMLResponse)
+async def api_test_page():
+    """Static page for testing HTTP API endpoints"""
+    html_content = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>🔬 FarmMate API Testing Suite</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                max-width: 1000px;
+                margin: 0 auto;
+                padding: 20px;
+                background: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
+                color: white;
+                min-height: 100vh;
+            }
+            .container {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 30px;
+                border-radius: 15px;
+                backdrop-filter: blur(10px);
+                box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            }
+            h1 {
+                text-align: center;
+                color: #fff;
+                margin-bottom: 30px;
+                font-size: 2.5em;
+            }
+            .test-section {
+                background: rgba(255, 255, 255, 0.9);
+                color: #333;
+                padding: 20px;
+                border-radius: 10px;
+                margin: 20px 0;
+            }
+            .input-group {
+                display: flex;
+                gap: 10px;
+                margin: 15px 0;
+                flex-wrap: wrap;
+            }
+            input[type="text"], textarea, select {
+                flex: 1;
+                padding: 12px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                font-size: 14px;
+                min-width: 200px;
+            }
+            button {
+                padding: 12px 24px;
+                background: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 14px;
+                transition: background 0.3s;
+            }
+            button:hover {
+                background: #45a049;
+            }
+            button:disabled {
+                background: #cccccc;
+                cursor: not-allowed;
+            }
+            .response-container {
+                background: #f5f5f5;
+                padding: 15px;
+                border-radius: 8px;
+                margin: 15px 0;
+                max-height: 300px;
+                overflow-y: auto;
+                border: 1px solid #ddd;
+            }
+            .endpoint-card {
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                margin: 20px 0;
+                overflow: hidden;
+            }
+            .endpoint-header {
+                background: #2E8B57;
+                color: white;
+                padding: 15px;
+                font-weight: bold;
+            }
+            .endpoint-body {
+                padding: 20px;
+            }
+            .method-badge {
+                display: inline-block;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: bold;
+                margin-right: 10px;
+            }
+            .method-get { background: #4CAF50; color: white; }
+            .method-post { background: #2196F3; color: white; }
+            .status-indicator {
+                display: inline-block;
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                margin-right: 5px;
+            }
+            .status-success { background: #4CAF50; }
+            .status-error { background: #f44336; }
+            .status-loading { background: #ff9800; animation: pulse 1s infinite; }
+            @keyframes pulse {
+                0% { opacity: 1; }
+                50% { opacity: 0.5; }
+                100% { opacity: 1; }
+            }
+            pre {
+                background: #f8f8f8;
+                padding: 10px;
+                border-radius: 4px;
+                overflow-x: auto;
+                white-space: pre-wrap;
+                font-size: 12px;
+            }
+            .navigation {
+                text-align: center;
+                margin: 20px 0;
+            }
+            .navigation a {
+                color: white;
+                text-decoration: none;
+                padding: 10px 20px;
+                margin: 0 10px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 20px;
+                transition: background 0.3s;
+            }
+            .navigation a:hover {
+                background: rgba(255, 255, 255, 0.3);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🔬 FarmMate API Testing Suite</h1>
+            
+            <div class="navigation">
+                <a href="/test-page">WebSocket Test</a>
+                <a href="/api-test">API Test</a>
+                <a href="/demo">Demo Page</a>
+                <a href="/docs">API Docs</a>
+                <a href="/health">Health Check</a>
+            </div>
+
+            <!-- Health Check Test -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method-badge method-get">GET</span>
+                    Health Check - /health
+                </div>
+                <div class="endpoint-body">
+                    <button onclick="testHealth()">
+                        <span id="health-status" class="status-indicator"></span>
+                        Test Health Endpoint
+                    </button>
+                    <div id="health-response" class="response-container" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Stats Test -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method-badge method-get">GET</span>
+                    Server Statistics - /stats
+                </div>
+                <div class="endpoint-body">
+                    <button onclick="testStats()">
+                        <span id="stats-status" class="status-indicator"></span>
+                        Get Server Stats
+                    </button>
+                    <div id="stats-response" class="response-container" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Chat HTTP Test -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method-badge method-post">POST</span>
+                    Chat Endpoint - /chat
+                </div>
+                <div class="endpoint-body">
+                    <div class="input-group">
+                        <input type="text" id="chat-user-id" placeholder="User ID" value="test-user-api">
+                        <input type="text" id="chat-query" placeholder="Enter your farming question in Hindi" value="मेरी गेहूं की फसल में कीड़े लग गए हैं">
+                    </div>
+                    <div class="input-group">
+                        <select id="chat-language">
+                            <option value="hi">Hindi (हिंदी)</option>
+                            <option value="en">English</option>
+                            <option value="pa">Punjabi</option>
+                            <option value="gu">Gujarati</option>
+                        </select>
+                        <input type="text" id="chat-location" placeholder="Location" value="India">
+                    </div>
+                    <button onclick="testChat()">
+                        <span id="chat-status" class="status-indicator"></span>
+                        Send Chat Message
+                    </button>
+                    <div id="chat-response" class="response-container" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Comprehensive Chat Test -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method-badge method-post">POST</span>
+                    Comprehensive Chat - /chat/comprehensive
+                </div>
+                <div class="endpoint-body">
+                    <div class="input-group">
+                        <input type="text" id="comp-user-id" placeholder="User ID" value="test-user-comp">
+                        <textarea id="comp-query" placeholder="Enter detailed farming question" rows="3">मैं राजस्थान में हूँ और मेरे पास 5 एकड़ जमीन है। बारिश के मौसम में कौन सी फसल लगाऊं जो अच्छा मुनाफा दे?</textarea>
+                    </div>
+                    <button onclick="testComprehensive()">
+                        <span id="comp-status" class="status-indicator"></span>
+                        Get Comprehensive Advice
+                    </button>
+                    <div id="comp-response" class="response-container" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Sample Questions -->
+            <div class="test-section">
+                <h3>🧪 Quick Test Questions</h3>
+                <button onclick="loadSampleQuestion(1)">🐛 Pest Control</button>
+                <button onclick="loadSampleQuestion(2)">🌾 Crop Suggestion</button>
+                <button onclick="loadSampleQuestion(3)">🌧️ Weather Advice</button>
+                <button onclick="loadSampleQuestion(4)">🌱 Soil Testing</button>
+                <button onclick="loadSampleQuestion(5)">💰 Market Prices</button>
+            </div>
+        </div>
+
+        <script>
+            const BASE_URL = window.location.origin;
+
+            function setStatus(elementId, status) {
+                const element = document.getElementById(elementId);
+                element.className = 'status-indicator status-' + status;
+            }
+
+            function showResponse(containerId, data) {
+                const container = document.getElementById(containerId);
+                container.style.display = 'block';
+                container.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            }
+
+            async function testHealth() {
+                setStatus('health-status', 'loading');
+                try {
+                    const response = await fetch(BASE_URL + '/health');
+                    const data = await response.json();
+                    setStatus('health-status', 'success');
+                    showResponse('health-response', data);
+                } catch (error) {
+                    setStatus('health-status', 'error');
+                    showResponse('health-response', {error: error.message});
+                }
+            }
+
+            async function testStats() {
+                setStatus('stats-status', 'loading');
+                try {
+                    const response = await fetch(BASE_URL + '/stats');
+                    const data = await response.json();
+                    setStatus('stats-status', 'success');
+                    showResponse('stats-response', data);
+                } catch (error) {
+                    setStatus('stats-status', 'error');
+                    showResponse('stats-response', {error: error.message});
+                }
+            }
+
+            async function testChat() {
+                setStatus('chat-status', 'loading');
+                try {
+                    const payload = {
+                        user_id: document.getElementById('chat-user-id').value,
+                        raw_query: document.getElementById('chat-query').value,
+                        language: document.getElementById('chat-language').value,
+                        location: document.getElementById('chat-location').value
+                    };
+
+                    const response = await fetch(BASE_URL + '/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+                    setStatus('chat-status', response.ok ? 'success' : 'error');
+                    showResponse('chat-response', data);
+                } catch (error) {
+                    setStatus('chat-status', 'error');
+                    showResponse('chat-response', {error: error.message});
+                }
+            }
+
+            async function testComprehensive() {
+                setStatus('comp-status', 'loading');
+                try {
+                    const payload = {
+                        user_id: document.getElementById('comp-user-id').value,
+                        raw_query: document.getElementById('comp-query').value,
+                        language: "hi",
+                        location: "India"
+                    };
+
+                    const response = await fetch(BASE_URL + '/chat/comprehensive', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+                    setStatus('comp-status', response.ok ? 'success' : 'error');
+                    showResponse('comp-response', data);
+                } catch (error) {
+                    setStatus('comp-status', 'error');
+                    showResponse('comp-response', {error: error.message});
+                }
+            }
+
+            function loadSampleQuestion(type) {
+                const questions = {
+                    1: "मेरी गेहूं की फसल में कीड़े लग गए हैं, क्या करूं?",
+                    2: "बारिश के मौसम में कौन सी फसल उगाऊं?",
+                    3: "अगले सप्ताह बारिश होगी या नहीं?",
+                    4: "मिट्टी की जांच कैसे करूं?",
+                    5: "आज गेहूं का भाव क्या है?"
+                };
+                document.getElementById('chat-query').value = questions[type];
+                document.getElementById('comp-query').value = questions[type];
+            }
+
+            // Auto-test health on page load
+            window.addEventListener('load', function() {
+                setTimeout(testHealth, 1000);
+            });
+        </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
+
+@app.get("/demo", response_class=HTMLResponse)
+async def demo_page():
+    """Demo page showcasing FarmMate capabilities"""
+    html_content = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>🌾 FarmMate AI - Demo Showcase</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                margin: 0;
+                padding: 0;
+                background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
+                color: #333;
+                min-height: 100vh;
+            }
+            .hero {
+                text-align: center;
+                padding: 50px 20px;
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+            }
+            .hero h1 {
+                font-size: 3.5em;
+                color: white;
+                margin-bottom: 20px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            }
+            .hero p {
+                font-size: 1.5em;
+                color: white;
+                margin-bottom: 30px;
+            }
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            .features-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 30px;
+                margin: 50px 0;
+            }
+            .feature-card {
+                background: white;
+                border-radius: 15px;
+                padding: 30px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                transition: transform 0.3s ease;
+            }
+            .feature-card:hover {
+                transform: translateY(-10px);
+            }
+            .feature-icon {
+                font-size: 3em;
+                margin-bottom: 15px;
+                display: block;
+            }
+            .feature-title {
+                font-size: 1.5em;
+                font-weight: bold;
+                margin-bottom: 15px;
+                color: #2E8B57;
+            }
+            .demo-section {
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 15px;
+                padding: 40px;
+                margin: 40px 0;
+                box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            }
+            .chat-demo {
+                background: #f8f9fa;
+                border-radius: 10px;
+                padding: 20px;
+                margin: 20px 0;
+                border-left: 5px solid #4ECDC4;
+            }
+            .question {
+                background: #e3f2fd;
+                padding: 15px;
+                border-radius: 10px;
+                margin: 10px 0;
+                border-left: 4px solid #2196F3;
+            }
+            .answer {
+                background: #f1f8e9;
+                padding: 15px;
+                border-radius: 10px;
+                margin: 10px 0;
+                border-left: 4px solid #4CAF50;
+            }
+            .navigation {
+                text-align: center;
+                margin: 30px 0;
+            }
+            .navigation a {
+                color: white;
+                text-decoration: none;
+                padding: 15px 30px;
+                margin: 0 10px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 25px;
+                transition: all 0.3s;
+                display: inline-block;
+                font-weight: bold;
+            }
+            .navigation a:hover {
+                background: rgba(255, 255, 255, 0.3);
+                transform: scale(1.05);
+            }
+            .stats-bar {
+                display: flex;
+                justify-content: space-around;
+                background: rgba(255, 255, 255, 0.1);
+                padding: 30px;
+                border-radius: 15px;
+                margin: 30px 0;
+            }
+            .stat-item {
+                text-align: center;
+                color: white;
+            }
+            .stat-number {
+                font-size: 2.5em;
+                font-weight: bold;
+                display: block;
+            }
+            .stat-label {
+                font-size: 1.1em;
+                margin-top: 5px;
+            }
+            .live-demo-btn {
+                background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+                color: white;
+                border: none;
+                padding: 20px 40px;
+                font-size: 1.2em;
+                border-radius: 30px;
+                cursor: pointer;
+                transition: all 0.3s;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            }
+            .live-demo-btn:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="hero">
+            <h1>🌾 FarmMate AI</h1>
+            <p>Intelligent Agricultural Assistant for Modern Farmers</p>
+            <button class="live-demo-btn" onclick="window.open('/test-page', '_blank')">
+                🚀 Try Live Demo
+            </button>
+        </div>
+
+        <div class="navigation">
+            <a href="/test-page">🧪 Live Test</a>
+            <a href="/api-test">🔬 API Testing</a>
+            <a href="/demo">🎯 Demo Page</a>
+            <a href="/docs">📚 API Docs</a>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-number">5+</span>
+                <span class="stat-label">AI Agents</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">7</span>
+                <span class="stat-label">Languages</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">24/7</span>
+                <span class="stat-label">Available</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">Real-time</span>
+                <span class="stat-label">Responses</span>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">🐛</span>
+                    <div class="feature-title">Pest & Disease Control</div>
+                    <p>AI-powered diagnosis and treatment recommendations for crop diseases and pest infestations. Get instant solutions with image analysis and symptom matching.</p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon">🌧️</span>
+                    <div class="feature-title">Weather Advisory</div>
+                    <p>Real-time weather updates, forecasts, and farming recommendations based on weather patterns. Plan your farming activities with precision.</p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon">🌱</span>
+                    <div class="feature-title">Crop Recommendations</div>
+                    <p>Smart crop selection based on soil type, weather, season, and market conditions. Maximize your yield and profit with data-driven suggestions.</p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon">🌍</span>
+                    <div class="feature-title">Soil Analysis</div>
+                    <p>Comprehensive soil health assessment and improvement recommendations. Upload soil test reports or describe soil conditions for analysis.</p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon">💰</span>
+                    <div class="feature-title">Market Prices</div>
+                    <p>Live market rates from major mandis across India. Get real-time pricing information to make informed selling decisions.</p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon">🏛️</span>
+                    <div class="feature-title">Government Schemes</div>
+                    <p>Complete information about agricultural subsidies, loans, and government schemes. Find relevant schemes and application procedures.</p>
+                </div>
+            </div>
+
+            <div class="demo-section">
+                <h2 style="color: #2E8B57; text-align: center; margin-bottom: 30px;">🎭 Live Chat Examples</h2>
+
+                <div class="chat-demo">
+                    <div class="question">
+                        <strong>🧑‍🌾 Farmer:</strong> "मेरी गेहूं की फसल में पीले धब्बे आ गए हैं, क्या करूं?"
+                    </div>
+                    <div class="answer">
+                        <strong>🤖 FarmMate AI:</strong> "यह गेहूं की पत्तियों में जंग (Rust) की समस्या हो सकती है। तुरंत प्रोपिकोनाजोल 25% EC का छिड़काव करें। मौसम में नमी अधिक हो तो 15 दिन बाद दोबारा छिड़काव करें। इसके अलावा नाइट्रोजन की मात्रा कम करें और पोटाश बढ़ाएं।"
+                    </div>
+                </div>
+
+                <div class="chat-demo">
+                    <div class="question">
+                        <strong>🧑‍🌾 Farmer:</strong> "राजस्थान में अगले महीने कौन सी फसल लगाऊं?"
+                    </div>
+                    <div class="answer">
+                        <strong>🤖 FarmMate AI:</strong> "राजस्थान में मार्च में रबी फसल की कटाई का समय है। गर्मियों के लिए आप मूंग, तिल, ग्वार या चारा फसलें लगा सकते हैं। सिंचाई की व्यवस्था अच्छी हो तो बाजरा भी एक अच्छा विकल्प है। मिट्टी टेस्ट कराकर उर्वरक की मात्रा तय करें।"
+                    </div>
+                </div>
+
+                <div class="chat-demo">
+                    <div class="question">
+                        <strong>🧑‍🌾 Farmer:</strong> "आज गेहूं का भाव क्या चल रहा है?"
+                    </div>
+                    <div class="answer">
+                        <strong>🤖 FarmMate AI:</strong> "आज मुख्य मंडियों में गेहूं का भाव: दिल्ली - ₹2,250/क्विंटल, जयपुर - ₹2,200/क्विंटल, लुधियाना - ₹2,300/क्विंटल। पिछले सप्ताह से 50-70 रुपये की बढ़त है। अच्छी गुणवत्ता के लिए प्रीमियम मिल रहा है।"
+                    </div>
+                </div>
+            </div>
+
+            <div class="demo-section">
+                <h2 style="color: #2E8B57; text-align: center;">🚀 Try It Yourself</h2>
+                <p style="text-align: center; font-size: 1.2em;">
+                    Connect with our AI assistant in real-time through WebSocket or test our HTTP APIs.
+                    Available in Hindi, English, Punjabi, Gujarati, and more regional languages.
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="live-demo-btn" onclick="window.open('/test-page', '_blank')">
+                        🌐 WebSocket Chat Demo
+                    </button>
+                    <button class="live-demo-btn" onclick="window.open('/api-test', '_blank')" style="margin-left: 20px;">
+                        🔬 HTTP API Testing
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; padding: 50px; background: rgba(0,0,0,0.8); color: white; margin-top: 50px;">
+            <h3>🌟 Built for Capital One Hackathon 2025</h3>
+            <p>Empowering farmers with AI-driven agricultural intelligence</p>
+        </div>
     </body>
     </html>
     """
