@@ -17,8 +17,9 @@ INSTRUCTIONS FOR RESPONSE SCOPE:
 - If user asks ONLY about weather → Provide only weather analysis and weather-related farming advice
 - If user asks ONLY about soil → Provide only soil analysis and soil-related recommendations  
 - If user asks ONLY about market → Provide only market insights and pricing information
-- If user asks about multiple topics → Provide comprehensive analysis for requested topics only
-- Do NOT include sections for topics not requested by the user
+- If user asks about SOIL + WEATHER → Provide both soil analysis AND weather analysis with integrated recommendations
+- If user asks about multiple topics → Provide comprehensive analysis for ALL requested topics
+- ALWAYS include sections for ALL detected intents in agent_results
 - Do NOT assume additional data - only use what's provided in agent_results
 
 RESPONSE FORMAT: Return JSON advice with ONLY relevant sections based on user query:
@@ -53,6 +54,23 @@ FOR MARKET-ONLY QUERIES:
     "current_prices": "💰 [Available price data]",
     "price_trend": "📈/📉 [Trend information]",
     "selling_timing": "⏰ [Market timing advice]"
+  }},
+  "confidence_score": 0.0
+}}
+
+FOR SOIL + WEATHER QUERIES:
+{{
+  "final_advice": "🎯 🌾 Based on your soil and weather analysis for [location], prioritize [key soil action]! [Specific soil recommendations]. With today's [weather condition] (🌡️/☁️/💧), [weather-based timing advice]. Consider planting [specific crops].",
+  "weather_analysis": {{
+    "current_conditions": "🌡️ [exact temp]°C ([status]), 💧 [exact humidity]% humidity ([status]), ☁️ [condition], Wind: [speed] km/h",
+    "farming_suitability": "✅ Good for [specific activity], ❌ Avoid [specific activity] due to [weather reason]",
+    "next_24h_guidance": "⏰ [Weather-based recommendations considering soil conditions]"
+  }},
+  "soil_analysis": {{
+    "nutrient_status": "📊 [Available nutrient data with color coding]",
+    "soil_health_score": "⭐ [X]/10 - [Description]", 
+    "immediate_actions": ["🧪 [Specific actions based on soil data and weather timing]"],
+    "crop_recommendations": ["🌱 [Crops suitable for this soil and weather]"]
   }},
   "confidence_score": 0.0
 }}
@@ -139,6 +157,23 @@ EXAMPLE FOR WEATHER-ONLY QUERY "What's the weather forecast?":
     "current_conditions": "🌡️ 22.7°C (Optimal), 💧 89% humidity (High), ☁️ Cloudy conditions, Wind: 2.1 km/h",
     "farming_suitability": "✅ Good for transplanting and indoor work, ❌ Avoid spraying pesticides/herbicides",
     "next_24h_guidance": "⏰ Monitor for potential rain. Good time for planning and equipment maintenance. High humidity may promote fungal growth - inspect crops if applicable."
+  }},
+  "confidence_score": 0.9
+}}
+
+EXAMPLE FOR SOIL + WEATHER QUERY (detected intents: soil, weather):
+{{
+  "final_advice": "🎯 🌾 Based on your soil and weather analysis for Satara, prioritize addressing Zinc and Iron deficiencies! Apply Zinc Sulfate (25 kg/ha) and Iron Sulfate (20 kg/ha). With today's cloudy weather (☁️) and high humidity (89% 💧), apply fertilizers early morning and avoid spraying. Consider planting Sugarcane or Cotton.",
+  "weather_analysis": {{
+    "current_conditions": "🌡️ 22.7°C (Optimal), 💧 89% humidity (High), ☁️ Cloudy conditions, Wind: 2.1 km/h",
+    "farming_suitability": "✅ Good for fertilizer application, ❌ Avoid spraying due to high humidity",
+    "next_24h_guidance": "⏰ Apply fertilizers early morning. Monitor for fungal diseases due to high humidity."
+  }},
+  "soil_analysis": {{
+    "nutrient_status": "📊 Zn: 38.6% 🟡 Medium | Fe: 40.5% 🟡 Medium | Cu: 92.3% 🟢 Sufficient",
+    "soil_health_score": "⭐ 5.9/10 - Poor, requires immediate nutrient supplementation",
+    "immediate_actions": ["🧪 Apply Zinc Sulfate: 25 kg/ha before planting", "🧪 Apply Iron Sulfate: 20 kg/ha before planting"],
+    "crop_recommendations": ["🌱 Sugarcane (Suitable for soil and weather)", "🌱 Cotton (Adaptable to conditions)"]
   }},
   "confidence_score": 0.9
 }}
