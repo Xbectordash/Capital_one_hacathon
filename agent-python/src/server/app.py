@@ -179,14 +179,24 @@ async def process_agricultural_query(message: ChatMessage) -> Dict:
             # Try to parse final_advice as comprehensive JSON
             try:
                 import json
-                if isinstance(final_advice, str) and final_advice.startswith('{'):
+                if isinstance(final_advice, str) and final_advice.strip().startswith('{'):
                     comprehensive_json = json.loads(final_advice)
                     processed_result["comprehensive_advice"] = comprehensive_json
                     processed_result["final_advice"] = comprehensive_json.get("final_advice", "No advice available")
                 else:
+                    # If not JSON, create a simple structure
                     processed_result["final_advice"] = final_advice
-            except (json.JSONDecodeError, AttributeError):
+                    processed_result["comprehensive_advice"] = {
+                        "final_advice": final_advice,
+                        "confidence_score": 0.8
+                    }
+            except (json.JSONDecodeError, AttributeError) as e:
+                logger.warning(f"Failed to parse comprehensive advice as JSON: {e}")
                 processed_result["final_advice"] = final_advice
+                processed_result["comprehensive_advice"] = {
+                    "final_advice": final_advice,
+                    "confidence_score": 0.8
+                }
             
             processed_result["explanation"] = decision.get('explanation', 'No explanation available')
         

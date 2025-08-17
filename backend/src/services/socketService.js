@@ -97,6 +97,7 @@ class SocketService {
         try {
             const response = JSON.parse(message.toString())
             console.log(`📤 Received Python response type: ${response.type} for language: ${language}`)
+            console.log(`🔍 Response data keys:`, Object.keys(response))
             
             // Only send final responses to the client, not intermediate status updates
             if (response.type === 'connection_established') {
@@ -134,6 +135,7 @@ class SocketService {
             // Handle the final agricultural response
             if (response.type === 'agricultural_response' && response.success && response.data) {
                 console.log(`✅ Successfully processed agricultural response for language: ${language}`)
+                console.log(`🔍 Response data structure:`, JSON.stringify(response.data, null, 2))
                 const data = response.data
                 let formattedResponse = ''
                 
@@ -262,9 +264,13 @@ class SocketService {
                     language: language,
                     timestamp: new Date().toISOString()
                 })
+            } else {
+                console.log(`⚠️ Unexpected response format:`, response)
+                socket.emit('error', { message: getErrorMessage('responseError', language) })
             }
         } catch (error) {
             console.error('❌ Error parsing Python response:', error)
+            console.error('❌ Raw message:', message.toString())
             socket.emit('error', { message: getErrorMessage('responseError', language) })
         }
     }
