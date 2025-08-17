@@ -15,8 +15,11 @@ AGENT RESULTS (intents + data):
 
 RESPONSE FORMAT:
 Return valid JSON including only the sections that match available intents. 
-Possible sections (include only if present in agent_results):
-- final_advice
+Mandatory sections:
+- final_advice (short, farmer-friendly head advice)
+- summary_message (end note with friendly wrap-up & encouragement)
+
+Optional sections (include only if present in agent_results):
 - weather_analysis
 - soil_analysis
 - market_insights
@@ -26,6 +29,17 @@ Possible sections (include only if present in agent_results):
 - cost_benefit
 - resources
 - confidence_score
+
+✨ FINAL_ADVICE:
+- Must always come first in JSON
+- Write 1–2 lines max
+- Blend 🌾 main recommendation + ⚡ urgent actions + 😊 friendly tone
+
+✨ SUMMARY_MESSAGE:
+- Must always come last in JSON
+- Write a 2–3 line farmer-friendly summary
+- Mix motivation + reminders + light emoji
+- Should feel like a closing conversation
 
 SECTION DETAILS:
 
@@ -72,32 +86,34 @@ resources:
   }}
 
 🎯 GUIDELINES:
-- Only output JSON with the sections relevant to available intents. 
+- Always generate both `final_advice` (top) and `summary_message` (bottom).
 - Use exact numbers, units, and emojis from `agent_results`.
 - Interpret soil %: 0-33% 🔴 Deficient, 34-66% 🟡 Medium, 67-100% 🟢 Sufficient.
 - Weather rules: <20°C ❄️ cold stress, >35°C 🔥 heat stress, Humidity>80% fungal risk.
-- Always give cost-benefit if market or soil input is present.
+- Cost-benefit only if market or soil is present.
 - Add risk_warnings if weather or soil shows danger signs.
 
-EXAMPLE (if only weather + soil present):
+EXAMPLE (soil + weather present):
 {{
-  "final_advice": "🌾 Apply Zinc Sulfate now, skip irrigation today.",
+  "final_advice": "🌾 Great day for fertilizer! Apply Zinc Sulfate (25 kg/ha) & Iron Sulfate (20 kg/ha). Skip irrigation today due to high humidity.",
   "weather_analysis": {{
-    "current_conditions": "🌡️ 23.4°C, 💧 84% humidity, ☁️ Cloudy",
-    "farming_suitability": "✅ Good for fertilizer, ❌ Not for irrigation",
-    "next_24h_guidance": "⏰ Fertilize before 10 AM"
+    "current_conditions": "🌡️ 22.21°C, 💧 95% humidity, ☁️ Cloudy",
+    "farming_suitability": "✅ Suitable for fertilizer application, ❌ Avoid irrigation",
+    "next_24h_guidance": "⏰ Monitor humidity closely and avoid spraying"
   }},
   "soil_analysis": {{
-    "nutrient_status": "📊 Zn: 38.6% 🔴 Deficient, Fe: 40.5% 🔴 Deficient",
-    "soil_health_score": "⭐ 6/10 - Needs urgent correction",
-    "immediate_actions": ["🧪 Zinc Sulfate 25 kg/ha", "💧 Hold irrigation"],
+    "nutrient_status": "📊 Zn: 38.6% 🟡 Medium, Fe: 40.5% 🟡 Medium, Cu: 92.3% 🟢 Sufficient, Mn: 59.1% 🟡 Medium, B: 67.2% 🟢 Sufficient, S: 55.9% 🟡 Medium",
+    "soil_health_score": "⭐ 5.9/10 - Needs multiple nutrient corrections",
+    "immediate_actions": ["🧪 Apply Zinc Sulfate (25 kg/ha)", "🧪 Apply Iron Sulfate (20 kg/ha)", "💧 Hold irrigation until nutrients are applied"],
     "crop_recommendations": ["🌱 Sugarcane", "🌱 Cotton", "🌱 Sunflower"]
   }},
-  "confidence_score": 0.92
+  "confidence_score": 0.91,
+  "summary_message": "✅ Summary: Soil needs nutrient correction (Zn, Fe, Mn, S). Weather is good for fertilization but risky for irrigation. 🌱 Focus on applying fertilizers this week, and monitor humidity. 👍 Keep it up, your crops will thank you!"
 }}
 
 Return only valid JSON.
 """
+
 
 translation_prompt = """
 You are an expert agricultural translator who specializes in translating agricultural advice and information into local languages while maintaining technical accuracy.

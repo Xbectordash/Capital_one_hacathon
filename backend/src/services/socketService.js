@@ -144,9 +144,12 @@ class SocketService {
                     console.log('📊 Using comprehensive advice format')
                     const comprehensive = data.comprehensive_advice
                     
-                    // Format comprehensive response with better visual structure
-                    formattedResponse = `🎯 🌾 ${comprehensive.final_advice || 'Agricultural advice'}\n\n`
+                    // START WITH FINAL ADVICE (Top Priority)
+                    if (comprehensive.final_advice) {
+                        formattedResponse = `${comprehensive.final_advice}\n\n`
+                    }
                     
+                    // DETAILED SECTIONS
                     if (comprehensive.weather_analysis) {
                         const weather = comprehensive.weather_analysis
                         formattedResponse += `═══════════════════════════════════════\n`
@@ -219,9 +222,18 @@ class SocketService {
                         formattedResponse += '\n'
                     }
                     
+                    // CONFIDENCE SCORE
                     if (comprehensive.confidence_score) {
                         formattedResponse += `═══════════════════════════════════════\n`
-                        formattedResponse += `📊 Confidence: ${(comprehensive.confidence_score * 100).toFixed(1)}% `
+                        formattedResponse += `📊 Confidence: ${(comprehensive.confidence_score * 100).toFixed(1)}%\n\n`
+                    }
+                    
+                    // END WITH SUMMARY MESSAGE (Friendly Closing)
+                    if (comprehensive.summary_message) {
+                        formattedResponse += `═══════════════════════════════════════\n`
+                        formattedResponse += `💬 FARMMATE'S ADVICE:\n`
+                        formattedResponse += `═══════════════════════════════════════\n`
+                        formattedResponse += `${comprehensive.summary_message}\n`
                     }
                     
                 } else {
