@@ -26,10 +26,12 @@ coverage.xml
 *.swo
 *~
 
-# Environment files
+# Environment files (keep only root .env, ignore others)
 .env.local
 .env.development
 .env.test
+env/
+.env.backup
 
 # Documentation
 docs/
@@ -52,3 +54,8 @@ node_modules/
 # Temporary files
 tmp/
 temp/
+
+# Python virtual environment
+venv/
+env/
+.venv/
