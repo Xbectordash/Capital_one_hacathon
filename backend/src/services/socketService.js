@@ -12,16 +12,26 @@ class SocketService {
     }
 
     initialize(server) {
+        // Get environment-specific CORS origins
+        const isDevelopment = process.env.NODE_ENV !== 'production'
+        const corsOrigins = isDevelopment 
+            ? ["http://localhost:3000", "http://localhost:3001"]
+            : [
+                "https://farmmate-frontend.onrender.com",
+                "http://localhost:3000", // Keep for local testing
+                process.env.FRONTEND_URL // Allow dynamic frontend URL
+            ].filter(Boolean) // Remove undefined values
+
         this.io = new Server(server, {
             cors: {
-                origin: ["http://localhost:3000", "http://localhost:3001"],
+                origin: corsOrigins,
                 methods: ["GET", "POST"],
                 credentials: true
             }
         })
 
         this.setupSocketHandlers()
-        console.log('🔌 Socket.IO service initialized')
+        console.log(`🔌 Socket.IO service initialized with CORS origins: ${corsOrigins.join(', ')}`)
     }
 
     setupSocketHandlers() {

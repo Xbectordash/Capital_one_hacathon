@@ -1,9 +1,72 @@
 # FarmMate Render Deployment Guide
 
 ## Overview
-This guide explains how to deploy FarmMate components on Render.com.
+This guide explains how to deploy FarmMate components on Render.com using **manual deployment** - the most reliable approach.
 
-## Option 1: Deploy Python AI Server (Recommended Start)
+## 🎯 Recommended Deployment Strategy
+
+**For Hackathon/Demo**: Start with **Python AI Server only** - it's sufficient for demonstration.
+
+**For Full Application**: Deploy all three services in sequence.
+
+## 🔗 Socket Connection Flow After Deployment
+
+### Architecture Overview:
+```
+User (Browser/App) 
+    ↓ Socket.IO
+Express Backend (Render) 
+    ↓ WebSocket
+Python AI Server (Render)
+```
+
+### Connection URLs:
+- **Local Development**: `ws://localhost:8000`
+- **Render Production**: `wss://farmmate-ai-server.onrender.com`
+
+### Deployment Sequence (Important!):
+
+#### Step 1: Deploy Python AI Server First
+```
+Name: farmmate-ai-server
+URL: https://farmmate-ai-server.onrender.com
+WebSocket: wss://farmmate-ai-server.onrender.com/ws/{user_id}
+```
+
+#### Step 2: Deploy Express Backend 
+```
+Name: farmmate-backend  
+URL: https://farmmate-backend.onrender.com
+Environment Variables Required:
+  - PYTHON_SERVER_URL=wss://farmmate-ai-server.onrender.com
+  - NODE_ENV=production
+  - PORT=5000
+  - FRONTEND_URL=https://farmmate-frontend.onrender.com (optional)
+```
+
+#### Step 3: Deploy React Frontend
+```
+Name: farmmate-frontend
+URL: https://farmmate-frontend.onrender.com
+Environment Variables Required:
+  - REACT_APP_BACKEND_URL=https://farmmate-backend.onrender.com
+  - REACT_APP_SOCKET_URL=https://farmmate-backend.onrender.com
+```
+
+## 🚀 Quick Start (Recommended for Hackathon)
+
+### Deploy Python AI Server Only
+
+This gives you a fully functional AI backend with:
+- REST API endpoints
+- WebSocket support  
+- Built-in test page
+- API documentation
+- Health monitoring
+
+**Perfect for demos and testing!**
+
+## Manual Deployment Steps (Recommended)
 
 ### Manual Deployment via Render Dashboard
 
@@ -58,9 +121,9 @@ Once deployed, test these endpoints:
 - Test Page: `https://farmmate-ai-server.onrender.com/test-page`
 - WebSocket: `wss://farmmate-ai-server.onrender.com/ws/{user_id}`
 
-## Option 2: Deploy Full Stack (Multiple Services)
+## Option 2: Deploy Express Backend (If Needed)
 
-If you want to deploy the complete application, you'll need to create separate services:
+Only deploy this if you need the Socket.IO gateway functionality.
 
 ### 1. Python AI Server (Backend Core)
 - Follow Option 1 above
@@ -70,13 +133,21 @@ If you want to deploy the complete application, you'll need to create separate s
 Name: farmmate-backend
 Root Directory: backend
 Dockerfile Path: backend/Dockerfile
+Docker Build Context Directory: backend
+Health Check Path: /health
+
 Environment Variables:
   - NODE_ENV=production
   - PORT=5000
   - PYTHON_SERVER_URL=wss://farmmate-ai-server.onrender.com
+  - FRONTEND_URL=https://farmmate-frontend.onrender.com
 ```
 
-### 3. React Frontend (Web App)
+**Important:** Express backend relies on Python server, so deploy Python server first!
+
+## Option 3: Deploy React Frontend (Optional)
+
+Only if you want the complete web application.
 ```
 Name: farmmate-frontend
 Root Directory: frontend/web/agricultural-chat-app
@@ -86,12 +157,6 @@ Environment Variables:
   - REACT_APP_BACKEND_URL=https://farmmate-backend.onrender.com
   - REACT_APP_SOCKET_URL=https://farmmate-backend.onrender.com
 ```
-
-## Deployment using render.yaml (Alternative)
-
-1. Use the provided `render.yaml` file in the repository root
-2. Connect your repository to Render
-3. Render will automatically detect and deploy based on the configuration
 
 ## Important Notes
 
@@ -141,9 +206,25 @@ For full stack deployment (3 services on Starter): ~$21/month
 
 ## Next Steps
 
-1. Start with Python AI Server deployment
-2. Test the API endpoints
-3. Deploy Express Backend if needed
-4. Deploy React Frontend for complete web app
-5. Set up monitoring and alerting
-6. Configure custom domain (optional)
+### For Hackathon/Demo:
+1. **Deploy Python AI Server** - sufficient for demonstration
+2. **Test API endpoints** - verify functionality  
+3. **Use built-in test page** - for live demo
+
+### For Production:
+1. Start with Python AI Server
+2. Add Express Backend for Socket.IO gateway
+3. Add React Frontend for complete web experience
+4. Set up monitoring and custom domain
+
+## 💡 Pro Tip
+
+The Python AI Server alone is a complete agricultural AI assistant! It includes:
+- Multi-language support
+- Weather integration
+- Soil analysis
+- Market data
+- Government schemes
+- WebSocket real-time communication
+
+Perfect for showcasing your AI capabilities! 🌾
