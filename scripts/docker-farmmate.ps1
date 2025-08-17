@@ -10,12 +10,12 @@ param(
     [string]$ServiceName,
     
     [switch]$SkipPortCheck,
-    [switch]$ShowVerbose
+    [switch]$Verbose
 )
 
 # Configuration
-$ComposeFile = "docker-compose.yml"
-$DevComposeFile = "docker-compose.yml"
+$ComposeFile = "docker-compose.enhanced.yml"
+$DevComposeFile = "docker-compose.dev.yml"
 $ProjectName = "farmmate"
 
 # Colors for output
@@ -33,12 +33,15 @@ $colors = @{
 Write-Host "
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                    🐳 FARMMATE DOCKER DEPLOYMENT 🐳                          ║
-║                       Clean Three-Tier Architecture                          ║
+║                     Enhanced with Comprehensive Monitoring                   ║
 ║                                                                              ║
+║  📊 Monitoring Dashboard (Port 9000)                                        ║
 ║  🐍 Python AI Server (Port 8000)                                            ║
 ║  🚀 Express Backend (Port 5000)                                             ║
 ║  ⚛️  React Frontend (Port 3000)                                              ║
-║  � ChromaDB (Port 8001)                                                    ║
+║  🌐 Nginx Load Balancer (Port 80)                                           ║
+║  📈 Prometheus (Port 9090)                                                  ║
+║  📊 Grafana (Port 3001)                                                     ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 " -ForegroundColor $colors.Cyan
 
@@ -64,7 +67,7 @@ function Test-Docker {
 
 # Function to check if ports are available
 function Test-Ports {
-    $ports = @(8000, 5000, 3000, 8001)
+    $ports = @(9000, 8000, 5000, 3000, 80, 9090, 3001)
     $unavailablePorts = @()
     
     foreach ($port in $ports) {
@@ -132,10 +135,10 @@ function Start-Services {
 # Function to check service health
 function Test-ServiceHealth {
     $services = @(
+        @{Name="monitoring"; Port=9000; Path="/health"},
         @{Name="agent-python"; Port=8000; Path="/health"},
-        @{Name="backend"; Port=5000; Path="/health"},
-        @{Name="frontend-web"; Port=3000; Path="/"},
-        @{Name="chromadb"; Port=8001; Path="/api/v1/heartbeat"}
+        @{Name="backend"; Port=5000; Path="/api/health"},
+        @{Name="frontend-web"; Port=3000; Path="/health"}
     )
     
     Write-Host "🔍 Checking service health..." -ForegroundColor $colors.Blue
@@ -203,10 +206,13 @@ function Show-Status {
     Invoke-Expression $statusCommand
     
     Write-Host "`n🔗 Service URLs:" -ForegroundColor $colors.Blue
+    Write-Host "📊 Monitoring Dashboard: http://localhost:9000" -ForegroundColor $colors.Green
     Write-Host "🌾 FarmMate Web App:     http://localhost:3000" -ForegroundColor $colors.Green
     Write-Host "🚀 Express Backend:      http://localhost:5000" -ForegroundColor $colors.Green
     Write-Host "🐍 Python AI Server:     http://localhost:8000" -ForegroundColor $colors.Green
-    Write-Host "📊 ChromaDB:             http://localhost:8001" -ForegroundColor $colors.Green
+    Write-Host "🌐 Nginx Load Balancer:  http://localhost:80" -ForegroundColor $colors.Green
+    Write-Host "📈 Prometheus:           http://localhost:9090" -ForegroundColor $colors.Green
+    Write-Host "📊 Grafana:              http://localhost:3001" -ForegroundColor $colors.Green
     
     Write-Host "`n💾 Docker Resources:" -ForegroundColor $colors.Blue
     Write-Host "Images:"
@@ -222,8 +228,14 @@ function Backup-Data {
     
     Write-Host "💾 Creating backup at $backupDir..." -ForegroundColor $colors.Blue
     
+    # Backup monitoring database
+    $dumpCommand = "docker-compose -f $ComposeFile -p $ProjectName exec -T monitoring sqlite3 /app/data/monitoring.db .dump"
+    $sqlDump = Invoke-Expression $dumpCommand
+    $sqlDump | Out-File -FilePath "$backupDir/monitoring.sql" -Encoding UTF8
+    
     # Backup Docker volumes
-    docker run --rm -v "${ProjectName}_chromadb-data:/data" -v "${PWD}/${backupDir}:/backup" alpine tar czf /backup/chromadb-data.tar.gz -C /data .
+    docker run --rm -v "${ProjectName}_monitoring-data:/data" -v "${PWD}/${backupDir}:/backup" alpine tar czf /backup/monitoring-data.tar.gz -C /data .
+    docker run --rm -v "${ProjectName}_logs-data:/data" -v "${PWD}/${backupDir}:/backup" alpine tar czf /backup/logs-data.tar.gz -C /data .
     
     Write-Host "✅ Backup completed at $backupDir" -ForegroundColor $colors.Green
 }
@@ -243,7 +255,8 @@ function Restore-Data {
     Stop-Services
     
     # Restore volumes
-    docker run --rm -v "${ProjectName}_chromadb-data:/data" -v "${PWD}/${BackupDir}:/backup" alpine tar xzf /backup/chromadb-data.tar.gz -C /data
+    docker run --rm -v "${ProjectName}_monitoring-data:/data" -v "${PWD}/${BackupDir}:/backup" alpine tar xzf /backup/monitoring-data.tar.gz -C /data
+    docker run --rm -v "${ProjectName}_logs-data:/data" -v "${PWD}/${BackupDir}:/backup" alpine tar xzf /backup/logs-data.tar.gz -C /data
     
     Write-Host "✅ Restore completed" -ForegroundColor $colors.Green
 }
@@ -265,7 +278,7 @@ function Update-Services {
 
 # Function to open shell
 function Open-Shell {
-    param([string]$ServiceName = "agent-python")
+    param([string]$ServiceName = "monitoring")
     
     $shellCommand = "docker-compose -f $ComposeFile -p $ProjectName exec $ServiceName /bin/bash"
     Invoke-Expression $shellCommand
@@ -286,10 +299,9 @@ switch ($Command) {
 ║                        🎉 FARMMATE DEPLOYMENT COMPLETE! 🎉                  ║
 ║                          All Services Running in Docker                      ║
 ║                                                                              ║
+║  📊 Monitoring: http://localhost:9000                                       ║
 ║  🌾 Web App:    http://localhost:3000                                       ║
-║  🚀 Backend:    http://localhost:5000                                       ║
-║  🐍 AI Server:  http://localhost:8000                                       ║
-║  📊 ChromaDB:   http://localhost:8001                                       ║
+║  🌐 Main Site:  http://localhost:80                                         ║
 ║                                                                              ║
 ║  Use './docker-farmmate.ps1 logs' to view logs                              ║
 ║  Use './docker-farmmate.ps1 stop' to stop all services                     ║
@@ -297,6 +309,8 @@ switch ($Command) {
 " -ForegroundColor $colors.Green
         
         # Open applications in browser
+        Start-Process "http://localhost:9000"
+        Start-Sleep -Seconds 1
         Start-Process "http://localhost:3000"
     }
     
@@ -348,7 +362,7 @@ switch ($Command) {
     }
     
     "shell" {
-        $service = if ($ServiceName) { $ServiceName } else { "agent-python" }
+        $service = if ($ServiceName) { $ServiceName } else { "monitoring" }
         Open-Shell -ServiceName $service
     }
     
@@ -369,12 +383,12 @@ switch ($Command) {
         Write-Host "  restore <backup_dir>       Restore from backup directory"
         Write-Host "  update                     Update all services to latest version"
         Write-Host "  build                      Build all Docker images"
-        Write-Host "  shell [service]            Open shell in service container (default: agent-python)"
+        Write-Host "  shell [service]            Open shell in service container (default: monitoring)"
         Write-Host ""
         Write-Host "Examples:"
         Write-Host "  .\docker-farmmate.ps1 start                   # Start all services"
         Write-Host "  .\docker-farmmate.ps1 dev                     # Start in development mode"
-        Write-Host "  .\docker-farmmate.ps1 logs backend            # Show backend service logs"
+        Write-Host "  .\docker-farmmate.ps1 logs monitoring         # Show monitoring service logs"
         Write-Host "  .\docker-farmmate.ps1 shell agent-python      # Open shell in Python AI server"
     }
 }

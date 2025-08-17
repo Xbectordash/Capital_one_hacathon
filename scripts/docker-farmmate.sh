@@ -15,8 +15,8 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Configuration
-COMPOSE_FILE="docker-compose.yml"
-DEV_COMPOSE_FILE="docker-compose.yml"
+COMPOSE_FILE="docker-compose.enhanced.yml"
+DEV_COMPOSE_FILE="docker-compose.dev.yml"
 PROJECT_NAME="farmmate"
 
 # ASCII Art Banner
@@ -24,12 +24,15 @@ echo -e "${CYAN}"
 cat << "EOF"
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                    🐳 FARMMATE DOCKER DEPLOYMENT 🐳                          ║
-║                       Clean Three-Tier Architecture                          ║
+║                     Enhanced with Comprehensive Monitoring                   ║
 ║                                                                              ║
+║  📊 Monitoring Dashboard (Port 9000)                                        ║
 ║  🐍 Python AI Server (Port 8000)                                            ║
 ║  🚀 Express Backend (Port 5000)                                             ║
 ║  ⚛️  React Frontend (Port 3000)                                              ║
-║  � ChromaDB (Port 8001)                                                    ║
+║  🌐 Nginx Load Balancer (Port 80)                                           ║
+║  📈 Prometheus (Port 9090)                                                  ║
+║  📊 Grafana (Port 3001)                                                     ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 EOF
 echo -e "${NC}"
@@ -51,7 +54,7 @@ check_docker() {
 
 # Function to check if ports are available
 check_ports() {
-    local ports=(8000 5000 3000 8001)
+    local ports=(9000 8000 5000 3000 80 9090 3001)
     local unavailable_ports=()
     
     for port in "${ports[@]}"; do
@@ -99,10 +102,10 @@ start_services() {
 # Function to check service health
 check_service_health() {
     local services=(
+        "monitoring:9000:/health"
         "agent-python:8000:/health"
-        "backend:5000:/health"
-        "frontend-web:3000:/"
-        "chromadb:8001:/api/v1/heartbeat"
+        "backend:5000:/api/health"
+        "frontend-web:3000:/health"
     )
     
     echo -e "${BLUE}🔍 Checking service health...${NC}"
@@ -160,10 +163,13 @@ show_status() {
     docker-compose -f $COMPOSE_FILE -p $PROJECT_NAME ps
     
     echo -e "\n${BLUE}🔗 Service URLs:${NC}"
+    echo -e "${GREEN}📊 Monitoring Dashboard: http://localhost:9000${NC}"
     echo -e "${GREEN}🌾 FarmMate Web App:     http://localhost:3000${NC}"
     echo -e "${GREEN}🚀 Express Backend:      http://localhost:5000${NC}"
     echo -e "${GREEN}🐍 Python AI Server:     http://localhost:8000${NC}"
-    echo -e "${GREEN}📊 ChromaDB:             http://localhost:8001${NC}"
+    echo -e "${GREEN}🌐 Nginx Load Balancer:  http://localhost:80${NC}"
+    echo -e "${GREEN}📈 Prometheus:           http://localhost:9090${NC}"
+    echo -e "${GREEN}📊 Grafana:              http://localhost:3001${NC}"
     
     echo -e "\n${BLUE}💾 Docker Resources:${NC}"
     echo "Images:"
@@ -179,8 +185,12 @@ backup_data() {
     
     echo -e "${BLUE}💾 Creating backup at $backup_dir...${NC}"
     
+    # Backup monitoring database
+    docker-compose -f $COMPOSE_FILE -p $PROJECT_NAME exec -T monitoring sqlite3 /app/data/monitoring.db .dump > "$backup_dir/monitoring.sql"
+    
     # Backup Docker volumes
-    docker run --rm -v "${PROJECT_NAME}_chromadb-data:/data" -v "$(pwd)/$backup_dir:/backup" alpine tar czf /backup/chromadb-data.tar.gz -C /data .
+    docker run --rm -v "${PROJECT_NAME}_monitoring-data:/data" -v "$(pwd)/$backup_dir:/backup" alpine tar czf /backup/monitoring-data.tar.gz -C /data .
+    docker run --rm -v "${PROJECT_NAME}_logs-data:/data" -v "$(pwd)/$backup_dir:/backup" alpine tar czf /backup/logs-data.tar.gz -C /data .
     
     echo -e "${GREEN}✅ Backup completed at $backup_dir${NC}"
 }
@@ -199,7 +209,8 @@ restore_data() {
     stop_services
     
     # Restore volumes
-    docker run --rm -v "${PROJECT_NAME}_chromadb-data:/data" -v "$(pwd)/$backup_dir:/backup" alpine tar xzf /backup/chromadb-data.tar.gz -C /data
+    docker run --rm -v "${PROJECT_NAME}_monitoring-data:/data" -v "$(pwd)/$backup_dir:/backup" alpine tar xzf /backup/monitoring-data.tar.gz -C /data
+    docker run --rm -v "${PROJECT_NAME}_logs-data:/data" -v "$(pwd)/$backup_dir:/backup" alpine tar xzf /backup/logs-data.tar.gz -C /data
     
     echo -e "${GREEN}✅ Restore completed${NC}"
 }
@@ -233,10 +244,9 @@ case "${1:-start}" in
 ║                        🎉 FARMMATE DEPLOYMENT COMPLETE! 🎉                  ║
 ║                          All Services Running in Docker                      ║
 ║                                                                              ║
+║  📊 Monitoring: http://localhost:9000                                       ║
 ║  🌾 Web App:    http://localhost:3000                                       ║
-║  🚀 Backend:    http://localhost:5000                                       ║
-║  🐍 AI Server:  http://localhost:8000                                       ║
-║  📊 ChromaDB:   http://localhost:8001                                       ║
+║  🌐 Main Site:  http://localhost:80                                         ║
 ║                                                                              ║
 ║  Use './scripts/docker-farmmate.sh logs' to view logs                       ║
 ║  Use './scripts/docker-farmmate.sh stop' to stop all services              ║
@@ -292,7 +302,7 @@ EOF
         ;;
         
     shell)
-        service="${2:-agent-python}"
+        service="${2:-monitoring}"
         docker-compose -f $COMPOSE_FILE -p $PROJECT_NAME exec "$service" /bin/bash
         ;;
         
@@ -313,12 +323,12 @@ EOF
         echo "  restore <backup_dir>       Restore from backup directory"
         echo "  update                     Update all services to latest version"
         echo "  build                      Build all Docker images"
-        echo "  shell [service]            Open shell in service container (default: agent-python)"
+        echo "  shell [service]            Open shell in service container (default: monitoring)"
         echo ""
         echo "Examples:"
         echo "  $0 start                   # Start all services"
         echo "  $0 dev                     # Start in development mode"
-        echo "  $0 logs backend            # Show backend service logs"
+        echo "  $0 logs monitoring         # Show monitoring service logs"
         echo "  $0 shell agent-python      # Open shell in Python AI server"
         ;;
 esac
