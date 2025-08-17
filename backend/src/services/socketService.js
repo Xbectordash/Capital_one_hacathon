@@ -142,26 +142,36 @@ class SocketService {
                     console.log('📊 Using comprehensive advice format')
                     const comprehensive = data.comprehensive_advice
                     
-                    // Format comprehensive response with all sections
-                    formattedResponse = `🎯 ${comprehensive.final_advice || 'Agricultural advice'}\n\n`
+                    // Format comprehensive response with better visual structure
+                    formattedResponse = `🎯 🌾 ${comprehensive.final_advice || 'Agricultural advice'}\n\n`
                     
                     if (comprehensive.weather_analysis) {
                         const weather = comprehensive.weather_analysis
+                        formattedResponse += `═══════════════════════════════════════\n`
                         formattedResponse += `🌤️ WEATHER ANALYSIS:\n`
-                        formattedResponse += `Current: ${weather.current_conditions || 'N/A'}\n`
-                        formattedResponse += `Farming: ${weather.farming_suitability || 'N/A'}\n`
-                        formattedResponse += `Next 24h: ${weather.next_24h_guidance || 'N/A'}\n\n`
+                        formattedResponse += `═══════════════════════════════════════\n`
+                        formattedResponse += `📊 Current: ${weather.current_conditions || 'N/A'}\n`
+                        formattedResponse += `⚡ Farming: ${weather.farming_suitability || 'N/A'}\n`
+                        formattedResponse += `🕒 Next 24h: ${weather.next_24h_guidance || 'N/A'}\n\n`
                     }
                     
                     if (comprehensive.soil_analysis) {
                         const soil = comprehensive.soil_analysis
+                        formattedResponse += `═══════════════════════════════════════\n`
                         formattedResponse += `🌱 SOIL ANALYSIS:\n`
-                        formattedResponse += `Nutrients: ${soil.nutrient_status || 'N/A'}\n`
-                        formattedResponse += `Health: ${soil.soil_health_score || 'N/A'}\n`
+                        formattedResponse += `═══════════════════════════════════════\n`
+                        formattedResponse += `📊 Nutrients: ${soil.nutrient_status || 'N/A'}\n`
+                        formattedResponse += `⭐ Health: ${soil.soil_health_score || 'N/A'}\n`
                         if (soil.immediate_actions && soil.immediate_actions.length > 0) {
-                            formattedResponse += `Actions:\n`
+                            formattedResponse += `🔧 Actions:\n`
                             soil.immediate_actions.forEach(action => {
-                                formattedResponse += `  • ${action}\n`
+                                formattedResponse += `   • ${action}\n`
+                            })
+                        }
+                        if (soil.crop_recommendations && soil.crop_recommendations.length > 0) {
+                            formattedResponse += `🌾 Recommended Crops:\n`
+                            soil.crop_recommendations.forEach(crop => {
+                                formattedResponse += `   • ${crop}\n`
                             })
                         }
                         formattedResponse += '\n'
@@ -169,30 +179,47 @@ class SocketService {
                     
                     if (comprehensive.market_insights) {
                         const market = comprehensive.market_insights
+                        formattedResponse += `═══════════════════════════════════════\n`
                         formattedResponse += `💰 MARKET INSIGHTS:\n`
-                        formattedResponse += `Prices: ${market.current_prices || 'N/A'}\n`
-                        formattedResponse += `Trend: ${market.price_trend || 'N/A'}\n`
-                        formattedResponse += `Timing: ${market.selling_timing || 'N/A'}\n\n`
+                        formattedResponse += `═══════════════════════════════════════\n`
+                        formattedResponse += `💵 Prices: ${market.current_prices || '💰 (Check agmarknet.gov.in for current prices)'}\n`
+                        formattedResponse += `📈 Trend: ${market.price_trend || '📊 (Check agmarknet.gov.in for price trends)'}\n`
+                        formattedResponse += `⏰ Timing: ${market.selling_timing || '🕒 (Check agmarknet.gov.in for best selling times)'}\n\n`
                     }
                     
                     if (comprehensive.priority_actions && comprehensive.priority_actions.length > 0) {
+                        formattedResponse += `═══════════════════════════════════════\n`
                         formattedResponse += `🔥 PRIORITY ACTIONS:\n`
+                        formattedResponse += `═══════════════════════════════════════\n`
                         comprehensive.priority_actions.forEach(action => {
-                            formattedResponse += `  ${action}\n`
+                            formattedResponse += `${action}\n`
                         })
                         formattedResponse += '\n'
                     }
                     
                     if (comprehensive.cost_benefit) {
                         const cost = comprehensive.cost_benefit
-                        formattedResponse += `💵 COST-BENEFIT:\n`
-                        formattedResponse += `Cost: ${cost.estimated_cost || 'N/A'}\n`
-                        formattedResponse += `Return: ${cost.expected_return || 'N/A'}\n`
-                        formattedResponse += `Timeline: ${cost.roi_timeframe || 'N/A'}\n\n`
+                        formattedResponse += `═══════════════════════════════════════\n`
+                        formattedResponse += `💵 COST-BENEFIT ANALYSIS:\n`
+                        formattedResponse += `═══════════════════════════════════════\n`
+                        formattedResponse += `💰 Cost: ${cost.estimated_cost || 'Contact local dealer for current prices'}\n`
+                        formattedResponse += `💎 Return: ${cost.expected_return || 'Depends on crop and market conditions'}\n`
+                        formattedResponse += `📅 Timeline: ${cost.roi_timeframe || 'Typically 6-12 months'}\n\n`
+                    }
+                    
+                    if (comprehensive.risk_warnings && comprehensive.risk_warnings.length > 0) {
+                        formattedResponse += `═══════════════════════════════════════\n`
+                        formattedResponse += `⚠️  IMPORTANT WARNINGS:\n`
+                        formattedResponse += `═══════════════════════════════════════\n`
+                        comprehensive.risk_warnings.forEach(warning => {
+                            formattedResponse += `${warning}\n`
+                        })
+                        formattedResponse += '\n'
                     }
                     
                     if (comprehensive.confidence_score) {
-                        formattedResponse += `📊 Confidence: ${(comprehensive.confidence_score * 100).toFixed(1)}%\n\n`
+                        formattedResponse += `═══════════════════════════════════════\n`
+                        formattedResponse += `📊 Confidence: ${(comprehensive.confidence_score * 100).toFixed(1)}% `
                     }
                     
                 } else {
