@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/chat_provider.dart';
+import '../../../services/language_provider.dart';
+import '../../../widgets/language_selector.dart';
 import '../../../utils/extensions/app_extensions.dart';
 import '../../../utils/deployment_helper.dart';
 import 'location_settings_screen.dart';
@@ -90,29 +92,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildLanguageSelector() {
-    return Consumer<ChatProvider>(
-      builder: (context, chatProvider, _) {
-        return Column(
-          children: chatProvider.languages.entries.map((entry) {
-            return RadioListTile<String>(
-              title: Text(entry.value),
-              value: entry.key,
-              groupValue: chatProvider.selectedLanguage,
-              onChanged: (value) {
-                if (value != null) {
-                  chatProvider.setLanguage(value);
-                }
-              },
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-            );
-          }).toList(),
-        );
-      },
     );
   }
 
@@ -264,7 +243,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               subtitle: 'Select your preferred language',
               icon: Icons.language,
               iconColor: Colors.green,
-              child: _buildLanguageSelector(),
+              child: const LanguageSelector(),
             ),
 
             // Location Settings

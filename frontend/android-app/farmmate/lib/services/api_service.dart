@@ -32,6 +32,14 @@ class ApiService {
     try {
       final uri = Uri.parse(AppConfig.chatEndpoint);
       
+      print('🌐 === HTTP API CALL START ===');
+      print('📍 API Endpoint: ${AppConfig.chatEndpoint}');
+      print('👤 User ID: ${_currentUserId ?? 'anonymous'}');
+      print('💬 Message: $message');
+      print('🗣️ Language: $language');
+      print('🌍 Location: $location');
+      print('📁 Files: ${files?.length ?? 0}');
+      
       var request = http.MultipartRequest('POST', uri);
       
       // Add text fields
@@ -39,6 +47,8 @@ class ApiService {
       request.fields['message'] = message;
       request.fields['language'] = language;
       request.fields['location'] = location;
+      
+      print('📋 Request Fields: ${request.fields}');
       
       // Add files if any
       if (files != null) {
@@ -48,26 +58,40 @@ class ApiService {
             file.path,
           );
           request.files.add(multipartFile);
+          print('📄 Added file: ${file.path}');
         }
       }
       
       _logger.d('Sending message: $message');
+      print('⏰ Request timeout: ${AppConfig.requestTimeout} seconds');
       
       final response = await request.send().timeout(
         Duration(seconds: AppConfig.requestTimeout),
       );
       final responseData = await response.stream.bytesToString();
       
+      print('📨 Response Status Code: ${response.statusCode}');
+      print('📄 Raw Response Data:');
+      print(responseData);
+      
       if (response.statusCode == 200) {
         final jsonData = json.decode(responseData);
+        print('✅ JSON Parsed Successfully:');
+        print(jsonData);
         _logger.i('Message sent successfully');
+        print('🌐 === HTTP API CALL END (SUCCESS) ===');
         return jsonData;
       } else {
+        print('❌ HTTP Error: ${response.statusCode}');
+        print('❌ Response body: $responseData');
         _logger.e('Failed to send message: ${response.statusCode}');
+        print('🌐 === HTTP API CALL END (ERROR) ===');
         return null;
       }
     } catch (e) {
+      print('💥 Exception in HTTP call: $e');
       _logger.e('Error sending message: $e');
+      print('🌐 === HTTP API CALL END (EXCEPTION) ===');
       return null;
     }
   }
@@ -111,10 +135,36 @@ class ApiService {
       });
       
       _socket!.on('ai_response', (data) {
+        print('🤖 === AI RESPONSE RECEIVED VIA WEBSOCKET ===');
+        print('📨 Raw response data:');
+        print(data);
         _logger.i('Received AI response');
         if (data is Map<String, dynamic>) {
+          print('✅ Data is Map<String, dynamic>, calling onResponse');
           onResponse(data);
+        } else {
+          print('⚠️ Data is not Map<String, dynamic>, type: ${data.runtimeType}');
+          print('🔄 Attempting to convert...');
+          try {
+            if (data is String) {
+              final jsonData = json.decode(data);
+              if (jsonData is Map<String, dynamic>) {
+                print('✅ Successfully converted string to Map');
+                onResponse(jsonData);
+              } else {
+                print('❌ Converted data is not Map<String, dynamic>');
+                onResponse({'response': data.toString()});
+              }
+            } else {
+              print('🔄 Converting to string format');
+              onResponse({'response': data.toString()});
+            }
+          } catch (e) {
+            print('❌ Error converting response: $e');
+            onResponse({'response': data.toString()});
+          }
         }
+        print('🤖 === AI RESPONSE PROCESSING END ===');
       });
       
       _socket!.on('error', (error) {
@@ -141,6 +191,9 @@ class ApiService {
     required String location,
     List<String>? fileUrls,
   }) {
+    print('🔌 === WEBSOCKET MESSAGE START ===');
+    print('📶 Socket connected: ${_socket?.connected}');
+    
     if (_socket?.connected == true) {
       final data = {
         'query': message,
@@ -150,13 +203,19 @@ class ApiService {
         if (fileUrls != null) 'files': fileUrls,
       };
       
+      print('📤 Sending data via WebSocket:');
+      print(data);
+      
       _socket!.emit('user_query', data);
+      print('✅ Message emitted successfully');
       _logger.d('🐛 Message sent via WebSocket: $message');
       _logger.d('🐛 📍 Location sent: $location');
       _logger.d('🐛 🗣️ Language sent: $language');
     } else {
+      print('❌ Socket not connected! Connection status: ${_socket?.connected}');
       _logger.e('Socket not connected');
     }
+    print('🔌 === WEBSOCKET MESSAGE END ===');
   }
   
   /// Disconnect WebSocket

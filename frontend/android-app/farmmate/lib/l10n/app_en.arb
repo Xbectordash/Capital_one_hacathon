@@ -1,0 +1,135 @@
+{
+  "@@locale": "en",
+  "appTitle": "FarmMate AI",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "welcome": "Welcome to FarmMate",
+  "@welcome": {
+    "description": "Welcome message for users"
+  },
+  "askQuestion": "Ask me anything about farming...",
+  "@askQuestion": {
+    "description": "Placeholder text for chat input"
+  },
+  "send": "Send",
+  "@send": {
+    "description": "Send button text"
+  },
+  "chat": "Chat",
+  "@chat": {
+    "description": "Chat tab label"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings tab label"
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Language setting label"
+  },
+  "location": "Location",
+  "@location": {
+    "description": "Location setting label"
+  },
+  "english": "English",
+  "@english": {
+    "description": "English language option"
+  },
+  "hindi": "हिंदी",
+  "@hindi": {
+    "description": "Hindi language option"
+  },
+  "marathi": "मराठी",
+  "@marathi": {
+    "description": "Marathi language option"
+  },
+  "gujarati": "ગુજરાતી",
+  "@gujarati": {
+    "description": "Gujarati language option"
+  },
+  "punjabi": "ਪੰਜਾਬੀ",
+  "@punjabi": {
+    "description": "Punjabi language option"
+  },
+  "kannada": "ಕನ್ನಡ",
+  "@kannada": {
+    "description": "Kannada language option"
+  },
+  "tamil": "தமிழ்",
+  "@tamil": {
+    "description": "Tamil language option"
+  },
+  "telugu": "తెలుగు",
+  "@telugu": {
+    "description": "Telugu language option"
+  },
+  "connecting": "Connecting...",
+  "@connecting": {
+    "description": "Connection status message"
+  },
+  "connected": "Connected",
+  "@connected": {
+    "description": "Connected status message"
+  },
+  "disconnected": "Disconnected",
+  "@disconnected": {
+    "description": "Disconnected status message"
+  },
+  "error": "Error",
+  "@error": {
+    "description": "Error message"
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Retry button text"
+  },
+  "typeMessage": "Type your message...",
+  "@typeMessage": {
+    "description": "Message input placeholder"
+  },
+  "attachFiles": "Attach Files",
+  "@attachFiles": {
+    "description": "File attachment button"
+  },
+  "voiceInput": "Voice Input",
+  "@voiceInput": {
+    "description": "Voice input button"
+  },
+  "farming": "Farming",
+  "@farming": {
+    "description": "Farming category"
+  },
+  "weather": "Weather",
+  "@weather": {
+    "description": "Weather category"
+  },
+  "crops": "Crops",
+  "@crops": {
+    "description": "Crops category"
+  },
+  "soil": "Soil",
+  "@soil": {
+    "description": "Soil category"
+  },
+  "market": "Market",
+  "@market": {
+    "description": "Market category"
+  },
+  "government": "Government Schemes",
+  "@government": {
+    "description": "Government schemes category"
+  },
+  "locationPermissionRequired": "Location permission is required for better recommendations",
+  "@locationPermissionRequired": {
+    "description": "Location permission message"
+  },
+  "enableLocation": "Enable Location",
+  "@enableLocation": {
+    "description": "Enable location button"
+  },
+  "currentLocation": "Current Location",
+  "@currentLocation": {
+    "description": "Current location label"
+  }
+}

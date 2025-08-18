@@ -203,8 +203,30 @@ async def process_agricultural_query(message: ChatMessage) -> Dict:
         # Extract translation if available
         if "translation" in result:
             translation = result["translation"]
-            processed_result["translated_response"] = translation.get('translated_response', '')
-            processed_result["translated_explanation"] = translation.get('translated_explanation', '')
+            print(f"🌐 Processing translation data: {translation}")
+            
+            # Update response with translated content
+            if translation.get('translated_response'):
+                processed_result["final_advice"] = translation['translated_response']
+                processed_result["response"] = translation['translated_response']
+                
+            if translation.get('translated_explanation'):
+                processed_result["explanation"] = translation['translated_explanation']
+            
+            # Add translation metadata
+            processed_result["translation"] = {
+                "target_language": translation.get('target_language', 'hi'),
+                "translated_response": translation.get('translated_response', ''),
+                "translated_explanation": translation.get('translated_explanation', ''),
+                "original_advice": translation.get('original_advice', ''),
+                "original_explanation": translation.get('original_explanation', ''),
+                "fallback_used": translation.get('fallback_used', False)
+            }
+            
+            logger.info(f"[AgriProcessor] Translation applied for language: {translation.get('target_language', 'hi')}")
+        else:
+            print("❌ No translation data found in result")
+            logger.info("[AgriProcessor] No translation data available")
         
         logger.info(f"[AgriProcessor] Successfully processed query for user {message.user_id}")
         return {

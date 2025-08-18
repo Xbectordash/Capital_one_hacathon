@@ -1,11 +1,12 @@
 import 'dart:io';
 import 'dart:ui'; // Needed for BackdropFilter blur effect
+import 'package:farmmate/utils/constants/app_assets.dart';
+import 'package:farmmate/utils/constants/app_strings.dart';
 import 'package:farmmate/utils/constants/app_colors.dart';
 import 'package:farmmate/features/chat/widgets/chat_bubble.dart';
 import 'package:farmmate/utils/extensions/app_extensions.dart';
 import 'package:farmmate/providers/chat_provider.dart';
-import 'package:farmmate/features/settings/screens/language_settings_screen.dart';
-import 'package:farmmate/utils/localization/app_localizations.dart';
+import 'package:farmmate/screens/test_screen.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -68,32 +69,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-
-    // Show feedback to user
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(AppLocalizations.translate('processing_request', chatProvider.selectedLanguage)),
-          ],
-        ),
-        backgroundColor: AppColors.primaryGreen,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-
-    // Store current message
-    final currentMessage = _textController.text;
-    print('📝 User typed: $currentMessage');
     
     // Convert FilePickerResult to List<File>
     List<File>? files;
@@ -105,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     await chatProvider.sendMessage(
-      text: currentMessage,
+      text: _textController.text,
       files: files,
     );
 
@@ -226,9 +201,9 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.pop(context);
               Navigator.pushNamed(context, '/settings');
             }),
-            _modernDrawerItem(Icons.language_rounded, 'भाषा / Language', () {
+            _modernDrawerItem(Icons.language_rounded, 'Language Test', () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const LanguageSettingsScreen()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const TestScreen()));
             }),
             _modernDrawerItem(Icons.info_rounded, 'About App', () => Navigator.pop(context)),
             const SizedBox(height: 20),
@@ -339,50 +314,15 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          // Language Indicator
-          Consumer<ChatProvider>(
-            builder: (context, chatProvider, child) {
-              return Container(
-                margin: const EdgeInsets.only(right: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.lightGreen.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.lightGreen.withOpacity(0.5)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.language_rounded,
-                      color: AppColors.primaryGreen,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      chatProvider.selectedLanguage.toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primaryGreen,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
           Container(
             decoration: BoxDecoration(
               color: AppColors.paleGreen,
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const LanguageSettingsScreen()));
-              },
+              onPressed: () => print('More options'),
               icon: const Icon(
-                Icons.settings_rounded,
+                Icons.more_vert_rounded,
                 color: AppColors.primaryGreen,
                 size: 24,
               ),
@@ -477,55 +417,22 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                   ),
                   
-                  // Loading indicator - Enhanced
+                  // Loading indicator
                   if (chatProvider.isLoading)
                     Container(
                       padding: const EdgeInsets.all(20),
-                      child: Column(
+                      child: Row(
                         children: [
-                          Row(
-                            children: [
-                              SpinKitThreeBounce(
-                                color: AppColors.primaryGreen,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  AppLocalizations.translate('getting_response', chatProvider.selectedLanguage),
-                                  style: const TextStyle(
-                                    color: AppColors.textSecondary,
-                                    fontStyle: FontStyle.italic,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
+                          SpinKitThreeBounce(
+                            color: AppColors.primaryGreen,
+                            size: 20,
                           ),
-                          const SizedBox(height: 12),
-                          Container(
-                            width: double.infinity,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: AppColors.paleGreen,
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                            child: LinearProgressIndicator(
-                              backgroundColor: AppColors.paleGreen,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                AppColors.primaryGreen,
-                              ),
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            chatProvider.useWebSocket 
-                                ? 'WebSocket के जरिए जुड़ा हुआ है...'
-                                : 'HTTP API के जरिए भेजा गया है...',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textLight,
+                          const SizedBox(width: 12),
+                          const Text(
+                            'FarmMate is thinking...',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontStyle: FontStyle.italic,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -829,7 +736,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             fontSize: 16,
                           ),
                           decoration: InputDecoration(
-                            hintText: AppLocalizations.translate('type_message', context.watch<ChatProvider>().selectedLanguage),
+                            hintText: AppStrings.askAnythingHint,
                             hintStyle: const TextStyle(
                               color: AppColors.textLight,
                               fontSize: 16,
