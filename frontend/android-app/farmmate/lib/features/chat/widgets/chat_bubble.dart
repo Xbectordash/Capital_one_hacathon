@@ -3,9 +3,12 @@ import 'dart:ui';
 import 'package:farmmate/features/chat/models/chat_message.dart';
 import 'package:flutter/material.dart';
 
+/// A widget that displays a single chat message in a bubble.
 class ChatBubble extends StatelessWidget {
+  /// The chat message to be displayed.
   final ChatMessage message;
 
+  /// Creates a [ChatBubble] widget.
   const ChatBubble({super.key, required this.message});
 
   @override

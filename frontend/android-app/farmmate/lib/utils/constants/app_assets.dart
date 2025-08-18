@@ -10,4 +10,5 @@ class AppAssets {
   static const whiteImageGallery = '$_iconPath/white_image_gallery.png';
   static const blackSend = '$_iconPath/black_send.png';
   static const whiteSend = '$_iconPath/white_send.png';
+  static const languageIcon = '$_iconPath/language.png';
 }

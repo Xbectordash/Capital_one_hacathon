@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'dart:ui'; // Needed for BackdropFilter blur effect
+import 'package:farmmate/l10n/app_localizations.dart';
+import 'package:farmmate/services/language_provider.dart';
 import 'package:farmmate/utils/constants/app_assets.dart';
-import 'package:farmmate/utils/constants/app_strings.dart';
 import 'package:farmmate/features/chat/models/chat_message.dart';
 import 'package:farmmate/features/chat/widgets/chat_bubble.dart';
 import 'package:farmmate/utils/extensions/app_extensions.dart';
@@ -11,7 +12,9 @@ import 'package:flutter/services.dart';
 import 'package:logger/web.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
+/// The main screen of the application, displaying the chat interface and drawer menu.
 class HomeScreen extends StatefulWidget {
+  /// Creates a [HomeScreen] widget.
   const HomeScreen({super.key});
 
   @override
@@ -19,13 +22,28 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  /// A global key to control the scaffold, used for opening the drawer.
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  /// A logger for debugging purposes.
   Logger logger = Logger();
+
+  /// The result of a file picker operation.
   FilePickerResult? result;
+
+  /// A controller for the text input field.
   final TextEditingController _textController = TextEditingController();
+
+  /// A list of chat messages to be displayed.
   final List<ChatMessage> _messages = [];
+
+  /// An instance of the speech-to-text plugin.
   final SpeechToText _speechToText = SpeechToText();
+
+  /// A flag to indicate whether speech recognition is enabled.
   bool _speechEnabled = false;
+
+  /// A flag to indicate whether the app is currently listening for speech.
   bool _isListening = false;
 
   @override
@@ -34,11 +52,13 @@ class _HomeScreenState extends State<HomeScreen> {
     _initSpeech();
   }
 
+  /// Initializes the speech-to-text functionality.
   void _initSpeech() async {
     _speechEnabled = await _speechToText.initialize();
     setState(() {});
   }
 
+  /// Starts listening for speech input.
   void _startListening() async {
     await _speechToText.listen(
       onResult: (result) {
@@ -52,6 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  /// Stops listening for speech input.
   void _stopListening() async {
     await _speechToText.stop();
     setState(() {
@@ -59,6 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  /// Sends a chat message.
   void _sendMessage() {
     if (_textController.text.isEmpty &&
         (result == null || result!.files.isEmpty)) {
@@ -146,43 +168,43 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 50),
                     _drawerItem(
                       Icons.home,
-                      'Home',
+                      AppLocalizations.of(context)!.home,
                       () => Navigator.pop(context),
                     ),
                     _drawerItem(
                       Icons.chat,
-                      'New Chat',
+                      AppLocalizations.of(context)!.newChat,
                       () => Navigator.pop(context),
                     ),
                     _drawerItem(
                       Icons.history,
-                      'Chat History',
+                      AppLocalizations.of(context)!.chatHistory,
                       () => Navigator.pop(context),
                     ),
                     _drawerItem(
                       Icons.bookmark,
-                      'Saved Responses',
+                      AppLocalizations.of(context)!.savedResponses,
                       () => Navigator.pop(context),
                     ),
                     _drawerItem(
                       Icons.person,
-                      'Profile',
+                      AppLocalizations.of(context)!.profile,
                       () => Navigator.pop(context),
                     ),
                     _drawerItem(
                       Icons.settings,
-                      'Settings',
+                      AppLocalizations.of(context)!.settings,
                       () => Navigator.pop(context),
                     ),
                     _drawerItem(
                       Icons.info,
-                      'About App',
+                      AppLocalizations.of(context)!.aboutApp,
                       () => Navigator.pop(context),
                     ),
                     const Divider(color: Colors.white54, thickness: 0.8),
                     _drawerItem(
                       Icons.logout,
-                      'Logout',
+                      AppLocalizations.of(context)!.logout,
                       () => Navigator.pop(context),
                       Colors.redAccent,
                     ),
@@ -227,7 +249,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           left: context.screenWidth * 0.05,
                         ),
                         child: Text(
-                          AppStrings.appName,
+                          AppLocalizations.of(context)!.appName,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w500,
@@ -237,10 +259,65 @@ class _HomeScreenState extends State<HomeScreen> {
                       Spacer(),
                       GestureDetector(
                         onTap: () {
-                          print('Dot menu');
+                          showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: const Text("Select Language"),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ListTile(
+                                    title: const Text("English"),
+                                    onTap: () {
+                                      LanguageProvider.of(
+                                        context,
+                                      ).setLocale(const Locale('en'));
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                  ListTile(
+                                    title: const Text("मराठी"),
+                                    onTap: () {
+                                      LanguageProvider.of(
+                                        context,
+                                      ).setLocale(const Locale('mr'));
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                  ListTile(
+                                    title: const Text("हिंदी"),
+                                    onTap: () {
+                                      LanguageProvider.of(
+                                        context,
+                                      ).setLocale(const Locale('hi'));
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                  ListTile(
+                                    title: const Text("ಕನ್ನಡ"),
+                                    onTap: () {
+                                      LanguageProvider.of(
+                                        context,
+                                      ).setLocale(const Locale('kn'));
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                  ListTile(
+                                    title: const Text("ગુજરાતી"),
+                                    onTap: () {
+                                      LanguageProvider.of(
+                                        context,
+                                      ).setLocale(const Locale('gu'));
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
                         },
                         child: Image.asset(
-                          AppAssets.blackMenuDots,
+                          AppAssets.languageIcon,
                           height: 25,
                           width: 25,
                         ),
@@ -446,8 +523,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                           child: TextField(
                                             controller: _textController,
                                             decoration: InputDecoration(
-                                              hintText:
-                                                  AppStrings.askAnythingHint,
+                                              hintText: AppLocalizations.of(
+                                                context,
+                                              )!.askAnythingHint,
                                               border: InputBorder.none,
                                             ),
                                           ),

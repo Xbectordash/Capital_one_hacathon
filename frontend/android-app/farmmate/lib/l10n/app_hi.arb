@@ -1,0 +1,13 @@
+{
+  "@@locale": "hi",
+  "appName": "फार्ममेट",
+  "askAnythingHint": "कुछ भी पूछें",
+  "home": "होम",
+  "newChat": "नई चैट",
+  "chatHistory": "चैट इतिहास",
+  "savedResponses": "सहेजे गए उत्तर",
+  "profile": "प्रोफ़ाइल",
+  "settings": "सेटिंग्स",
+  "aboutApp": "एप के बारे में",
+  "logout": "लॉगआउट"
+}

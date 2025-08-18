@@ -1,0 +1,13 @@
+{
+  "@@locale": "en",
+  "appName": "Farmmate",
+  "askAnythingHint": "Ask anything",
+  "home": "Home",
+  "newChat": "New Chat",
+  "chatHistory": "Chat History",
+  "savedResponses": "Saved Responses",
+  "profile": "Profile",
+  "settings": "Settings",
+  "aboutApp": "About App",
+  "logout": "Logout"
+}
