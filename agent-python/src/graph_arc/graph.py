@@ -44,9 +44,19 @@ def build_graph():
     graph.add_edge("conditional_router", "decision_support")
     
     # After decision support, conditionally go to translation if needed
+    def should_translate(state):
+        language = state.get("language", "en").lower()
+        print(f"🔍 Checking translation need for language: {language}")
+        if language not in ["en", "english"]:
+            print(f"✅ Translation needed for language: {language}")
+            return "translation_language"
+        else:
+            print("❌ No translation needed - language is English")
+            return "END"
+    
     graph.add_conditional_edges(
         "decision_support",
-        lambda state: "translation_language" if state.get("language", "en").lower() not in ["en", "english"] else "END",
+        should_translate,
         {
             "translation_language": "translation_language",
             "END": END
