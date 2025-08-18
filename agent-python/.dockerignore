@@ -1,27 +1,61 @@
-# Ignore Python virtual environment
-venv/
-
-# Ignore environment config
-.env
-
-# Ignore Python cache
+# Ignore unnecessary files for Docker build
 __pycache__/
-*.py[cod]
-
-# Ignore Git files
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
 .git
-.gitignore
+.mypy_cache
+.pytest_cache
+.hypothesis
 
-# Ignore IDE/editor files
+# IDE files
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
-# Ignore logs and test outputs
-logs/
-*.log
-coverage/
-.pytest_cache/
+# Environment files (keep only root .env, ignore others)
+.env.local
+.env.development
+.env.test
+env/
+.env.backup
 
-# Ignore OS-specific files
-Thumbs.db
+# Documentation
+docs/
+*.md
+README.md
+
+# Test files
+test/
+tests/
+*_test.py
+test_*.py
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Node modules if any
+node_modules/
+
+# Temporary files
+tmp/
+temp/
+
+# Python virtual environment
+venv/
+env/
+.venv/

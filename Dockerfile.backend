@@ -1,0 +1,32 @@
+# FarmMate Express.js Gateway Server
+FROM node:20-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files first for better caching
+COPY backend/package.json backend/package-lock.json ./
+
+# Install dependencies
+RUN npm install --production
+
+# Copy the rest of the application code
+COPY backend/ .
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S farmmate -u 1001
+
+# Change ownership of the app directory
+RUN chown -R farmmate:nodejs /app
+USER farmmate
+
+# Expose port that Render will assign
+EXPOSE 10000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:' + (process.env.PORT || 10000) + '/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
+
+# Start the Express server
+CMD ["node", "src/index.js"]

@@ -1,0 +1,84 @@
+# FarmMate ChromaDB Configuration
+# Vector database configuration for agricultural AI knowledge storage
+
+[database]
+name = "farmmate_agricultural_db"
+version = "1.0.0"
+description = "Vector database for storing agricultural knowledge and embeddings"
+
+[server]
+host = "0.0.0.0"
+port = 8000
+cors_allow_origins = ["http://localhost:3000", "http://localhost:5000", "http://localhost:8000"]
+
+[collections]
+# Agricultural knowledge collections
+[collections.crop_knowledge]
+name = "crop_knowledge"
+description = "Crop cultivation, diseases, and management knowledge"
+embedding_function = "sentence-transformers/all-MiniLM-L6-v2"
+metadata_schema = { crop_type = "string", season = "string", region = "string", language = "string" }
+
+[collections.weather_patterns]
+name = "weather_patterns"
+description = "Weather patterns and agricultural correlations"
+embedding_function = "sentence-transformers/all-MiniLM-L6-v2"
+metadata_schema = { location = "string", season = "string", weather_type = "string" }
+
+[collections.soil_data]
+name = "soil_data"
+description = "Soil types and crop recommendations"
+embedding_function = "sentence-transformers/all-MiniLM-L6-v2"
+metadata_schema = { soil_type = "string", ph_range = "string", nutrients = "string" }
+
+[collections.government_schemes]
+name = "government_schemes"
+description = "Government agricultural schemes and subsidies"
+embedding_function = "sentence-transformers/all-MiniLM-L6-v2"
+metadata_schema = { scheme_type = "string", state = "string", eligibility = "string", language = "string" }
+
+[collections.market_prices]
+name = "market_prices"
+description = "Market price trends and predictions"
+embedding_function = "sentence-transformers/all-MiniLM-L6-v2"
+metadata_schema = { commodity = "string", market = "string", date = "string", price_trend = "string" }
+
+[embedding]
+# Embedding model configuration
+model = "sentence-transformers/all-MiniLM-L6-v2"
+dimensions = 384
+max_tokens = 512
+
+[storage]
+# Storage configuration
+path = "/chroma/chroma"
+backup_enabled = true
+backup_interval = "24h"
+backup_path = "/chroma/backups"
+
+[performance]
+# Performance tuning
+batch_size = 100
+max_concurrent_requests = 50
+cache_size = "1GB"
+index_type = "HNSW"
+
+[logging]
+level = "INFO"
+format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+file = "/chroma/logs/chromadb.log"
+max_file_size = "100MB"
+backup_count = 5
+
+[security]
+# Security settings
+auth_enabled = false
+ssl_enabled = false
+api_key_required = false
+allowed_hosts = ["localhost", "agent-python", "farmmate-ai-server"]
+
+[monitoring]
+# Monitoring and health checks
+health_check_enabled = true
+metrics_enabled = true
+metrics_port = 8001

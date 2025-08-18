@@ -1,0 +1,75 @@
+# Import agent node functions
+from src.graph_arc.agents_node.weather_agent import weather_agent
+from src.graph_arc.agents_node.soil_crop_recommendation_agent import soil_crop_recommendation_agent
+from src.graph_arc.agents_node.market_price_agent import market_price_agent
+from src.graph_arc.agents_node.crop_health_pest_agent import crop_health_pest_agent
+from src.graph_arc.agents_node.government_schemes_agent import government_schemes_agent
+from src.graph_arc.core_nodes.offline_access_agent import offline_access_agent
+# Import state types
+from src.graph_arc.state import GlobalState
+from src.utils.loggers import get_logger
+from typing import Dict, Any, List, Union
+
+def conditional_router(state: GlobalState) -> GlobalState:
+    """
+    Routes the query to appropriate agent nodes based on detected intents.
+    Takes GlobalState as input and updates it with agent results.
+    
+    Args:
+        state: The GlobalState containing user query, intents, and entities
+        
+    Returns:
+        Updated GlobalState with agent results
+    """
+    logger = get_logger("conditional_router")
+    logger.info("[ConditionalRouter] Starting agent routing process")
+    
+    intents = state.get("intents", [])
+    raw_query = state.get("raw_query", "")
+    
+    logger.info(f"[ConditionalRouter] Processing query: '{raw_query}'")
+    logger.info(f"[ConditionalRouter] Detected intents: {intents}")
+    
+    # Initialize empty results dictionary
+    results: Dict[str, Any] = {}
+    
+    # Process each intent through the appropriate agent
+    for intent in intents:
+        logger.info(f"[ConditionalRouter] Processing intent: {intent}")
+        
+        if intent == "weather":
+            logger.info("[ConditionalRouter] Invoking weather agent")
+            results["weather"] = weather_agent(state)
+            logger.info("[ConditionalRouter] Weather agent completed")
+        elif intent == "soil":
+            logger.info("[ConditionalRouter] Invoking soil crop recommendation agent")
+            results["soil_crop_recommendation"] = soil_crop_recommendation_agent(state)
+            logger.info("[ConditionalRouter] Soil crop agent completed")
+        elif intent == "market":
+            logger.info("[ConditionalRouter] Invoking market price agent")
+            results["market_price"] = market_price_agent(state)
+            logger.info("[ConditionalRouter] Market price agent completed")
+        elif intent == "crop_health":
+            logger.info("[ConditionalRouter] Invoking crop health pest agent")
+            results["crop_health_pest"] = crop_health_pest_agent(state)
+            logger.info("[ConditionalRouter] Crop health agent completed")
+        elif intent == "government_schemes":
+            logger.info("[ConditionalRouter] Invoking government schemes agent")
+            results["government_schemes"] = government_schemes_agent(state)
+            logger.info("[ConditionalRouter] Government schemes agent completed")
+        elif intent == "offline":
+            logger.info("[ConditionalRouter] Invoking offline access agent")
+            results["offline_access"] = offline_access_agent(state)
+            logger.info("[ConditionalRouter] Offline access agent completed")
+        elif intent not in ["translation", "decision_support", "policy"]:  # These are handled separately
+            logger.warning(f"[ConditionalRouter] No handler found for intent: {intent}")
+            results[intent] = {"error": f"No handler for intent '{intent}'"}
+    
+    logger.info(f"[ConditionalRouter] Agent routing completed. Processed {len(results)} agents")
+    logger.info(f"[ConditionalRouter] Agent results keys: {list(results.keys())}")
+    
+    # Update GlobalState with agent results
+    updated_state = GlobalState(**state)
+    updated_state["agent_results"] = results
+    
+    return updated_state

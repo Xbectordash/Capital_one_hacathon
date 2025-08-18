@@ -1,15 +1,11 @@
 import 'package:file_picker/file_picker.dart';
 
+enum MessageSender { user, bot, system }
 /// An enumeration representing the sender of a chat message.
 enum MessageSender {
   /// The message was sent by the user.
   user,
 
-  /// The message was sent by the bot.
-  bot
-}
-
-/// A class representing a single chat message.
 class ChatMessage {
   /// The text content of the message.
   final String text;

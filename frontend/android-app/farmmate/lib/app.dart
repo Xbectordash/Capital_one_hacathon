@@ -1,4 +1,6 @@
 import 'package:farmmate/features/home/screens/home_screen.dart';
+import 'package:farmmate/features/settings/screens/settings_screen.dart';
+import 'package:farmmate/features/settings/screens/location_settings_screen.dart';
 import 'package:farmmate/l10n/app_localizations.dart';
 import 'package:farmmate/services/language_provider.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +30,9 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       initialRoute: '/home',
       routes: {
-        '/home': (context) => HomeScreen()
+        '/home': (context) => const HomeScreen(),
+        '/settings': (context) => const SettingsScreen(),
+        '/location-settings': (context) => const LocationSettingsScreen(),
       },
       localizationsDelegates: const [
         AppLocalizations.delegate,

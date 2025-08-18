@@ -6,11 +6,14 @@ import 'package:farmmate/utils/constants/app_assets.dart';
 import 'package:farmmate/features/chat/models/chat_message.dart';
 import 'package:farmmate/features/chat/widgets/chat_bubble.dart';
 import 'package:farmmate/utils/extensions/app_extensions.dart';
+import 'package:farmmate/providers/chat_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logger/web.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 /// The main screen of the application, displaying the chat interface and drawer menu.
 class HomeScreen extends StatefulWidget {
@@ -80,35 +83,31 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  /// Sends a chat message.
-  void _sendMessage() {
+  void _sendMessage() async {
     if (_textController.text.isEmpty &&
         (result == null || result!.files.isEmpty)) {
       return;
     }
 
-    final userMessage = ChatMessage(
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+
+    // Convert FilePickerResult to List<File>
+    List<File>? files;
+    if (result != null && result!.files.isNotEmpty) {
+      files = result!.files
+          .where((file) => file.path != null)
+          .map((file) => File(file.path!))
+          .toList();
+    }
+
+    await chatProvider.sendMessage(
       text: _textController.text,
-      sender: MessageSender.user,
-      files: result?.files,
-      timestamp: DateTime.now(),
+      files: files,
     );
 
     setState(() {
-      _messages.add(userMessage);
       _textController.clear();
       result = null;
-    });
-
-    Future.delayed(const Duration(seconds: 1), () {
-      final botMessage = ChatMessage(
-        text: 'This is a mock response.',
-        sender: MessageSender.bot,
-        timestamp: DateTime.now(),
-      );
-      setState(() {
-        _messages.add(botMessage);
-      });
     });
   }
 
@@ -194,7 +193,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     _drawerItem(
                       Icons.settings,
                       AppLocalizations.of(context)!.settings,
-                      () => Navigator.pop(context),
+                      () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/settings');
+                      },
                     ),
                     _drawerItem(
                       Icons.info,
@@ -340,11 +342,118 @@ class _HomeScreenState extends State<HomeScreen> {
                         topLeft: Radius.circular(30),
                         topRight: Radius.circular(30),
                       ),
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        itemCount: _messages.length,
-                        itemBuilder: (context, index) {
-                          return ChatBubble(message: _messages[index]);
+                      child: Consumer<ChatProvider>(
+                        builder: (context, chatProvider, _) {
+                          return Column(
+                            children: [
+                              // Connection status indicator
+                              if (chatProvider.useWebSocket)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        chatProvider.isConnected
+                                            ? Icons.wifi
+                                            : Icons.wifi_off,
+                                        size: 16,
+                                        color: chatProvider.isConnected
+                                            ? Colors.green
+                                            : Colors.red,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        chatProvider.isConnected
+                                            ? 'Connected to FarmMate AI'
+                                            : 'Disconnected',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: chatProvider.isConnected
+                                              ? Colors.green
+                                              : Colors.red,
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                      Text(
+                                        'Language: ${chatProvider.languages[chatProvider.selectedLanguage]}',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                              // Chat messages
+                              Expanded(
+                                child: chatProvider.messages.isEmpty
+                                    ? Center(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.agriculture,
+                                              size: 64,
+                                              color: Colors.green[300],
+                                            ),
+                                            const SizedBox(height: 16),
+                                            Text(
+                                              'Welcome to FarmMate!',
+                                              style: TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.green[700],
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              'Ask me anything about farming',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.grey[600],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    : ListView.builder(
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        itemCount: chatProvider.messages.length,
+                                        itemBuilder: (context, index) {
+                                          return ChatBubble(
+                                            message: chatProvider.messages[index],
+                                          );
+                                        },
+                                      ),
+                              ),
+
+                              // Loading indicator
+                              if (chatProvider.isLoading)
+                                Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    children: [
+                                      SpinKitThreeBounce(
+                                        color: Colors.blue,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      const Text(
+                                        'FarmMate is thinking...',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          );
                         },
                       ),
                     ),
